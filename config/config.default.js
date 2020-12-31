@@ -1,30 +1,47 @@
 /* eslint valid-jsdoc: "off" */
 
-'use strict';
-
 /**
  * @param {Egg.EggAppInfo} appInfo app info
+ * https://github.com/eggjs/egg/blob/master/config/config.default.js
  */
-module.exports = appInfo => {
-  /**
-   * built-in config
-   * @type {Egg.EggAppConfig}
-   **/
-  const config = exports = {};
-
-  // use for cookie sign key, should change to your own and keep security
-  config.keys = appInfo.name + '_1609294316610_3076';
-
-  // add your middleware config here
-  config.middleware = [];
-
-  // add your user config here
-  const userConfig = {
-    // myAppName: 'egg',
-  };
-
-  return {
-    ...config,
-    ...userConfig,
-  };
-};
+module.exports = (appInfo) => ({
+	keys: `${appInfo.name}_1608715601779_9499`,
+	middleware: ['login'],
+	userConfig: {
+		// myAppName: 'egg',
+	},
+	security: {
+		csrf: {
+			enable: false,
+		},
+	},
+	cluster: {
+		listen: {
+			port: 80,
+		},
+	},
+	mysql: {
+		client: {
+			host: 'localhost',
+			port: '3306',
+			user: 'root',
+			password: 'root',
+			database: 'sso',
+		},
+		app: true,
+	},
+	redis: {
+		clients: {
+			session: {
+				host: 'localhost',
+				port: 6379,
+				password: '',
+				db: 0,
+			},
+		},
+		agent: true,
+	},
+	sessionRedis: {
+		name: 'session',
+	},
+})
