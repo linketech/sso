@@ -7,6 +7,8 @@
 
 const fs = require('fs')
 
+const { env } = process
+
 module.exports = (appInfo) => ({
 	keys: `${appInfo.name}_1608715601779_9499`,
 	middleware: ['login'],
@@ -20,15 +22,15 @@ module.exports = (appInfo) => ({
 	},
 	cluster: {
 		listen: {
-			port: 80,
+			port: env.PORT || 80,
 		},
 	},
 	mysql: {
 		client: {
-			host: 'localhost',
-			port: '3306',
-			user: 'root',
-			password: 'root',
+			host: env.MYSQL_HOST || 'localhost',
+			port: env.MYSQL_PORT || 3306,
+			user: env.MYSQL_USER || 'root',
+			password: env.MYSQL_PASSWORD || 'root',
 			database: 'sso',
 		},
 		app: true,
@@ -36,10 +38,10 @@ module.exports = (appInfo) => ({
 	redis: {
 		clients: {
 			session: {
-				host: 'localhost',
-				port: 6379,
-				password: '',
-				db: 0,
+				host: env.REDIS_HOST || 'localhost',
+				port: env.REDIS_PORT || 6379,
+				password: env.REDIS_PASSWORD || '',
+				db: env.REIDS_DB || 0,
 			},
 		},
 		agent: true,
