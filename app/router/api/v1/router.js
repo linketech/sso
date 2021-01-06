@@ -10,4 +10,7 @@ module.exports = ({ router, controller }) => {
 	subRouter.post('/session', controller.session.create)
 	subRouter.get('/session', controller.session.get)
 	subRouter.delete('/session', controller.session.destroy)
+
+	subRouter.get('/jwt', controller.jwt.get)
+	subRouter.get('/jwt/verify', controller.jwt.verify)
 }
