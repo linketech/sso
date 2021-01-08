@@ -1,6 +1,6 @@
+![Node.js CI](https://github.com/CoderIvan/sso/workflows/Node.js%20CI/badge.svg)
+
 # sso
-
-
 
 ## QuickStart
 
