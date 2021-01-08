@@ -40,7 +40,6 @@ class HomeController extends Controller {
 			decoded = jwt.verify(request.query.token, this.PUBLIC_KEY, { algorithm: 'ES256' })
 		} catch (err) {
 			// DO NOTHING
-			console.warn(err)
 		}
 
 		response.body = decoded
