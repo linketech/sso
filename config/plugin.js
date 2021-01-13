@@ -17,4 +17,8 @@ module.exports = {
 		enable: true,
 		package: 'egg-session-redis',
 	},
+	validate: {
+		enable: true,
+		package: 'egg-validate',
+	},
 }

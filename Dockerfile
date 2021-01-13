@@ -15,7 +15,7 @@ COPY package.json /usr/src/app/
 
 RUN npm i --production
 
-# RUN npm i --production   --registry=https://registry.npm.taobao.org
+# RUN npm i --production --registry=https://registry.npm.taobao.org
 
 COPY . /usr/src/app
 

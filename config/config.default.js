@@ -37,11 +37,13 @@ module.exports = (appInfo) => ({
 	},
 	redis: {
 		clients: {
+			// https://github.com/luin/ioredis/blob/master/API.md#new-redisport-host-options
 			session: {
 				host: env.REDIS_HOST || 'localhost',
 				port: env.REDIS_PORT || 6379,
 				password: env.REDIS_PASSWORD || '',
 				db: env.REIDS_DB || 0,
+				keyPrefix: 'sso:session:',
 			},
 		},
 		agent: true,

@@ -1,12 +1,12 @@
 const { Controller } = require('egg')
 
-class HomeController extends Controller {
-	async frontendSalt() {
+module.exports = class SessionController extends Controller {
+	async getfrontendSaltByUsername() {
 		const { ctx } = this
-		const { request, response } = ctx
-		const { username } = request.body
+		const { params, response } = ctx
+		const { username } = params
 
-		const frontendSalt = await ctx.service.user.getFrontendSalt(username)
+		const frontendSalt = await ctx.service.user.getfrontendSaltByUsername(username)
 
 		response.status = 200
 		response.body = frontendSalt
@@ -21,7 +21,7 @@ class HomeController extends Controller {
 
 		ctx.session.user = {
 			id: user.id.toString('hex'),
-			username: user.username,
+			name: user.name,
 		}
 
 		response.status = 200
@@ -34,7 +34,7 @@ class HomeController extends Controller {
 		response.status = 200
 		response.body = {
 			user: {
-				username: ctx.session.user.username,
+				name: ctx.session.user.name,
 			},
 		}
 	}
@@ -47,5 +47,3 @@ class HomeController extends Controller {
 		response.status = 200
 	}
 }
-
-module.exports = HomeController

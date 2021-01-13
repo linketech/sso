@@ -1,17 +1,7 @@
 const { Controller } = require('egg')
 const jwt = require('jsonwebtoken')
 
-function omitBuildIn(object) {
-	return Object.keys(object)
-		.filter((key) => !key.startsWith('_'))
-		.reduce((previousValue, currentValue) => {
-			// eslint-disable-next-line no-param-reassign
-			previousValue[currentValue] = object[currentValue]
-			return previousValue
-		}, {})
-}
-
-class HomeController extends Controller {
+module.exports = class JwtController extends Controller {
 	constructor(...args) {
 		super(...args)
 
@@ -27,7 +17,11 @@ class HomeController extends Controller {
 		const { response } = ctx
 
 		response.body = {
-			token: jwt.sign(omitBuildIn(ctx.session), this.PRIVATE_KEY, { algorithm: 'ES256' }),
+			token: jwt.sign({
+				user: {
+					name: ctx.session.user.name,
+				},
+			}, this.PRIVATE_KEY, { algorithm: 'ES256' }),
 		}
 	}
 
@@ -45,5 +39,3 @@ class HomeController extends Controller {
 		response.body = decoded
 	}
 }
-
-module.exports = HomeController

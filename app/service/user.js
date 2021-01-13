@@ -4,13 +4,25 @@ const crypto = require('../util/crypto')
 const uuid = require('../util/uuid')
 
 module.exports = class UserService extends Service {
+	async checkIfExistByName(name) {
+		const { db } = this.ctx
+
+		const user = await db.queryOneBySquel((squel) => squel
+			.select()
+			.field('1')
+			.from('user')
+			.where('name = ?', name))
+
+		return !!user
+	}
+
 	/**
 	 * 创建用户
-	 * @param {String} username
+	 * @param {String} name
 	 * @param {String} password Hex String
 	 * @param {String} frontendSalt Hex String
 	 */
-	async create(username, password, frontendSalt) {
+	async create(name, password, frontendSalt) {
 		const { db } = this.ctx
 
 		const id = uuid.v4()
@@ -23,7 +35,7 @@ module.exports = class UserService extends Service {
 			.into('user')
 			.setFields({
 				id,
-				username,
+				name,
 				hash_password: hashPassword,
 				salt,
 				frontend_salt: Buffer.from(frontendSalt, 'hex'),
@@ -33,28 +45,28 @@ module.exports = class UserService extends Service {
 
 	/**
 	 *
-	 * @param {String} username
+	 * @param {String} name
 	 * @param {String} password Hex String
 	 * @param {String} frontendSalt Hex String
 	 */
-	async get(username, password) {
+	async get(name, password) {
 		const { db } = this.ctx
 
 		const user = await db.queryOneBySquel((squel) => squel
 			.select()
 			.field('id')
-			.field('username')
+			.field('name')
 			.field('hash_password')
 			.field('salt')
 			.from('user')
-			.where('username = ?', username))
+			.where('name = ?', name))
 
 		if (user) {
 			const hashPassword = crypto.sha256(Buffer.from(password, 'hex'), user.salt)
 			if (hashPassword.equals(user.hash_password)) {
 				return {
 					id: user.id,
-					username: user.username,
+					name: user.name,
 				}
 			}
 		}
@@ -62,14 +74,14 @@ module.exports = class UserService extends Service {
 		return undefined
 	}
 
-	async getFrontendSalt(username) {
+	async getfrontendSaltByUsername(name) {
 		const { db } = this.ctx
 
 		const user = await db.queryOneBySquel((squel) => squel
 			.select()
 			.field('frontend_salt')
 			.from('user')
-			.where('username = ?', username))
+			.where('name = ?', name))
 
 		if (user && user.frontend_salt) {
 			return user.frontend_salt.toString('hex')
