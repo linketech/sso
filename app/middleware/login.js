@@ -1,11 +1,15 @@
-module.exports = () => async (ctx, next) => {
-	const { request: { url, method }, response } = ctx
+const IGNORE_REQUEST = [
+	['/session', 'POST'],
+	['/session/frontend_salt/', 'GET'],
+	['/jwt/verify/', 'GET'],
+]
 
-	if (/\/session/.test(url) && method === 'POST') {
-		await next()
-		return
-	}
-	if (/\/session\/frontend_salt/.test(url) && method === 'GET') {
+module.exports = () => async (ctx, next) => {
+	const { request: { path, method }, response } = ctx
+
+	const ignore = IGNORE_REQUEST.find(([matchUrl, matchMethod]) => path.startsWith(`/api${matchUrl}`) && method === matchMethod)
+
+	if (ignore) {
 		await next()
 		return
 	}

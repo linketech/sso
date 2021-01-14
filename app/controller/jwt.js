@@ -27,11 +27,13 @@ module.exports = class JwtController extends Controller {
 
 	async verify() {
 		const { ctx } = this
-		const { request, response } = ctx
+		const { params, response } = ctx
+
+		const { token } = params
 
 		let decoded
 		try {
-			decoded = jwt.verify(request.query.token, this.PUBLIC_KEY, { algorithm: 'ES256' })
+			decoded = jwt.verify(token, this.PUBLIC_KEY, { algorithm: 'ES256' })
 		} catch (err) {
 			// DO NOTHING
 		}
