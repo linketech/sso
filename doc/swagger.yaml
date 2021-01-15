@@ -30,7 +30,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  frontend_salt:
+                  frontendSalt:
                     type: string
   /session:
     post:

@@ -21,7 +21,7 @@ module.exports = class UserController extends Controller {
 		}, ctx.request.body)
 
 		if (errors) {
-			ctx.response.body = { errors }
+			ctx.response.body = { message: '无效请求参数', errors }
 			ctx.response.status = 400
 			return
 		}
@@ -31,7 +31,7 @@ module.exports = class UserController extends Controller {
 		const exixt = await ctx.service.user.checkIfExistByName(username)
 
 		if (exixt) {
-			ctx.response.body = { errors: ['the username already exists'] }
+			ctx.response.body = { message: '用户名已经存在' }
 			ctx.response.status = 400
 			return
 		}

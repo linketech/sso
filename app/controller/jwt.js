@@ -26,8 +26,20 @@ module.exports = class JwtController extends Controller {
 	}
 
 	async verify() {
-		const { ctx } = this
+		const { ctx, app } = this
 		const { params, response } = ctx
+
+		const errors = app.validator.validate({
+			token: {
+				type: 'string',
+			},
+		}, params)
+
+		if (errors) {
+			ctx.response.body = { message: '无效请求参数', errors }
+			ctx.response.status = 400
+			return
+		}
 
 		const { token } = params
 
