@@ -1,0 +1,174 @@
+openapi: 3.0.0
+info:
+  description: SSO HTTP API文档.
+  version: 1.0.0
+  title: SSO Http API
+servers:
+  - description: 本地
+    url: 'http://localhost/api'
+  - description: 测试网
+    url: 'http://sso-alpha.dbjtech.com/api'
+paths:
+  /session/frontend_salt/{username}:
+    get:
+      tags:
+        - session
+      summary: 获取前端登录时需要的盐
+      parameters: 
+        - name: username
+          in: path
+          description: 用户名
+          required: true
+          schema:
+            type: string
+          example: ivan
+      responses:
+        '200':
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  frontend_salt:
+                    type: string
+  /session:
+    post:
+      tags:
+        - session
+      summary: 登录
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+            examples:
+              '1':
+                value:
+                  username: ivan
+                  password: >-
+                    746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f
+      responses:
+        '200':
+          description: >
+            Successfully authenticated.
+            The session ID is returned in a cookie named `EGG_SESS`. You need to include this cookie in subsequent requests.
+          headers: 
+            Set-Cookie:
+              schema: 
+                type: string
+                example: EGG_SESS=abcde12345; Path=/; HttpOnly
+      security: []
+    delete:
+      tags:
+        - session
+      summary: 登出
+      responses:
+        '200':
+          description: 登出成功
+      security:
+        - cookieAuth: []
+    get:
+      tags:
+        - session
+      summary: 获取会话内容
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    description: 用户信息
+                    properties:
+                      name:
+                        type: string
+                        description: 用户名
+      security:
+        - cookieAuth: []
+  /jwt:
+    get:
+      tags:
+        - jwt
+      summary: 获取JWT
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: token
+      security:
+        - cookieAuth: []
+  /jwt/verify/{token}:
+    get:
+      tags:
+        - jwt
+      summary: 验证JWT是否合法
+      parameters: 
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJpdmFuIn0sImlhdCI6MTYxMDUyOTg3OX0.V5o45Pkh_aGPrvzydb_9iRUPGQGCePEMmRFrFLSILGeMGS7tW3WjXt3YJRU9DJ1KZYQRv4DG5KxkKfVKA2RpSw
+      responses:
+        '200':
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                type: object
+  /user:
+    post:
+      tags:
+        - user
+      summary: 创建用户
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "ivan"
+                password:
+                  type: string
+                  description: 经过hmac-sha256哈希后的值
+                  pattern: '^[0-9a-fA-F]{64}$'
+                  example: "746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f"
+                frontendSalt:
+                  type: string
+                  description: 对原始密码加的盐
+                  pattern: '^[0-9a-fA-F]{32}$'
+                  example: "d1b3ab63608e445ca1e26190dd141f89"
+              required:
+                - username
+                - password
+                - frontendSalt
+      responses:
+        '200':
+          description: 请求成功
+      security: []
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: EGG_SESS
