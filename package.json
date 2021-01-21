@@ -7,7 +7,6 @@
     "declarations": true
   },
   "dependencies": {
-    "bluebird": "^3.7.2",
     "egg": "^2.29.1",
     "egg-mysql": "^3.0.0",
     "egg-redis": "^2.4.0",
@@ -16,15 +15,13 @@
     "egg-session-redis": "^2.1.0",
     "egg-validate": "^2.0.2",
     "jsonwebtoken": "^8.5.1",
-    "mysql": "^2.18.1",
-    "squel": "^5.13.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "egg-ivan-mysql": "file:packages/egg-ivan-mysql"
   },
   "devDependencies": {
     "autod": "^3.1.1",
     "autod-egg": "^1.1.0",
     "egg-bin": "^4.15.0",
-    "egg-ci": "^1.18.0",
     "egg-mock": "^4.0.1",
     "eslint": "^7.17.0",
     "eslint-config-airbnb-base": "^14.2.1",

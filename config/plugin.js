@@ -1,14 +1,11 @@
+const path = require('path')
+
 /** @type Egg.EggPlugin */
 module.exports = {
-	// had enabled by egg
-	// static: {
-	//   enable: true,
-	// }
 	routerPlus: {
 		enable: true,
 		package: 'egg-router-plus',
 	},
-	// plugin.js
 	redis: {
 		enable: true,
 		package: 'egg-redis',
@@ -20,5 +17,9 @@ module.exports = {
 	validate: {
 		enable: true,
 		package: 'egg-validate',
+	},
+	ivanMysql: {
+		enable: true,
+		path: 'egg-ivan-mysql',
 	},
 }
