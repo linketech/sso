@@ -13,7 +13,7 @@ module.exports = class UserService extends Service {
 
 		const user = await knex
 			.select()
-			.column('1')
+			.column(knex.raw('1'))
 			.from('user')
 			.where({ name })
 			.first()
@@ -48,10 +48,19 @@ module.exports = class UserService extends Service {
 	}
 
 	/**
-	 * 通过用户名和密码获取用户信息（登录）
+	 * 创建用户 (密码不使用前端盐Hash)
 	 * @param {String} name
 	 * @param {String} password Hex String
-	 * @param {String} frontendSalt Hex String
+	 */
+	async createWithNoSalt(name, password) {
+		const frontendSalt = uuid.v4()
+		this.create(name, crypto.sha256(Buffer.from(password, 'ascii'), frontendSalt), frontendSalt)
+	}
+
+	/**
+	 * 通过用户名和密码获取用户信息（登录）
+	 * @param {String} name
+	 * @param {String} password Hex String 经过前端盐Hash
 	 */
 	async get(name, password) {
 		const { knex } = this.app
@@ -67,7 +76,48 @@ module.exports = class UserService extends Service {
 			.first()
 
 		if (user) {
-			const hashPassword = crypto.sha256(Buffer.from(password, 'hex'), user.salt)
+			const hashPassword = crypto.sha256(
+				Buffer.from(password, 'hex'),
+				user.salt,
+			)
+			if (hashPassword.equals(user.hash_password)) {
+				return {
+					id: user.id,
+					name: user.name,
+				}
+			}
+		}
+
+		return undefined
+	}
+
+	/**
+	 * 通过用户名和密码获取用户信息（登录）(密码不使用前端盐Hash)
+	 * @param {String} name
+	 * @param {String} password Hex String 未经过前端盐Hash，原始密码
+	 */
+	async getWithNoSalt(name, password) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column('id')
+			.column('name')
+			.column('hash_password')
+			.column('salt')
+			.column('frontend_salt')
+			.from('user')
+			.where({ name })
+			.first()
+
+		if (user) {
+			const hashPassword = crypto.sha256(
+				crypto.sha256(
+					Buffer.from(password, 'ascii'),
+					user.frontend_salt,
+				),
+				user.salt,
+			)
 			if (hashPassword.equals(user.hash_password)) {
 				return {
 					id: user.id,

@@ -8,6 +8,7 @@ module.exports = ({ router, controller }) => {
 
 	subRouter.get('/session/frontend_salt/:username', controller.session.getfrontendSaltByUsername)
 	subRouter.post('/session', controller.session.create)
+	subRouter.post('/session/no_salt', controller.session.createWithNoSalt)
 	subRouter.get('/session', controller.session.get)
 	subRouter.delete('/session', controller.session.destroy)
 
@@ -15,4 +16,5 @@ module.exports = ({ router, controller }) => {
 	subRouter.get('/jwt/verify/:token', controller.jwt.verify)
 
 	subRouter.post('/user', controller.user.create)
+	subRouter.post('/user/no_salt', controller.user.createWithNoSalt)
 }

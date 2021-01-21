@@ -40,4 +40,40 @@ module.exports = class UserController extends Controller {
 
 		response.status = 200
 	}
+
+	async createWithNoSalt() {
+		const { ctx, app } = this
+		const { request, response } = ctx
+
+		const errors = app.validator.validate({
+			username: {
+				type: 'string',
+				max: 45,
+			},
+			password: {
+				type: 'string',
+				format: /^\w{1,32}$/,
+			},
+		}, ctx.request.body)
+
+		if (errors) {
+			ctx.response.body = { message: '无效请求参数', errors }
+			ctx.response.status = 400
+			return
+		}
+
+		const { username, password } = request.body
+
+		const exixt = await ctx.service.user.checkIfExistByName(username)
+
+		if (exixt) {
+			ctx.response.body = { message: '用户名已经存在' }
+			ctx.response.status = 400
+			return
+		}
+
+		await ctx.service.user.createWithNoSalt(username, password)
+
+		response.status = 200
+	}
 }
