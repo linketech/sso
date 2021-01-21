@@ -15,8 +15,8 @@
     "egg-session-redis": "^2.1.0",
     "egg-validate": "^2.0.2",
     "jsonwebtoken": "^8.5.1",
-    "uuid": "^8.3.2",
-    "egg-ivan-mysql": "file:packages/egg-ivan-mysql"
+    "knex": "^0.21.16",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "autod": "^3.1.1",

@@ -25,15 +25,24 @@ module.exports = (appInfo) => ({
 			port: env.PORT || 80,
 		},
 	},
-	mysql: {
+	knex: {
 		client: {
-			host: env.MYSQL_HOST || 'localhost',
-			port: env.MYSQL_PORT || 3306,
-			user: env.MYSQL_USER || 'root',
-			password: env.MYSQL_PASSWORD || 'root',
-			database: 'sso',
+			client: 'mysql',
+			connection: {
+				host: env.MYSQL_HOST || 'localhost',
+				port: env.MYSQL_PORT || 3306,
+				user: env.MYSQL_USER || 'root',
+				password: env.MYSQL_PASSWORD || 'root',
+				database: 'sso',
+			},
+			pool: {
+				min: 0,
+				max: 5,
+			},
+			acquireConnectionTimeout: 5000,
 		},
 		app: true,
+		agent: false,
 	},
 	redis: {
 		clients: {

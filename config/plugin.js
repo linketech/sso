@@ -1,6 +1,3 @@
-const path = require('path')
-
-/** @type Egg.EggPlugin */
 module.exports = {
 	routerPlus: {
 		enable: true,
@@ -17,9 +14,5 @@ module.exports = {
 	validate: {
 		enable: true,
 		package: 'egg-validate',
-	},
-	ivanMysql: {
-		enable: true,
-		path: 'egg-ivan-mysql',
 	},
 }

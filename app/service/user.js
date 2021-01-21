@@ -4,14 +4,19 @@ const crypto = require('../util/crypto')
 const uuid = require('../util/uuid')
 
 module.exports = class UserService extends Service {
+	/**
+	 * 检查用户名是否存在
+	 * @param {*} name
+	 */
 	async checkIfExistByName(name) {
-		const { db } = this.ctx
+		const { knex } = this.app
 
-		const user = await db.queryOneBySquel((squel) => squel
+		const user = await knex
 			.select()
-			.field('1')
+			.column('1')
 			.from('user')
-			.where('name = ?', name))
+			.where({ name })
+			.first()
 
 		return !!user
 	}
@@ -23,43 +28,43 @@ module.exports = class UserService extends Service {
 	 * @param {String} frontendSalt Hex String
 	 */
 	async create(name, password, frontendSalt) {
-		const { db } = this.ctx
+		const { knex } = this.app
 
 		const id = uuid.v4()
 		const salt = uuid.v4()
 
 		const hashPassword = crypto.sha256(Buffer.from(password, 'hex'), salt)
 
-		await db.queryBySquel((squel) => squel
-			.insert()
-			.into('user')
-			.setFields({
+		await knex
+			.insert({
 				id,
 				name,
 				hash_password: hashPassword,
 				salt,
 				frontend_salt: Buffer.from(frontendSalt, 'hex'),
 				create_time: Date.now(),
-			}))
+			})
+			.into('user')
 	}
 
 	/**
-	 *
+	 * 通过用户名和密码获取用户信息（登录）
 	 * @param {String} name
 	 * @param {String} password Hex String
 	 * @param {String} frontendSalt Hex String
 	 */
 	async get(name, password) {
-		const { db } = this.ctx
+		const { knex } = this.app
 
-		const user = await db.queryOneBySquel((squel) => squel
+		const user = await knex
 			.select()
-			.field('id')
-			.field('name')
-			.field('hash_password')
-			.field('salt')
+			.column('id')
+			.column('name')
+			.column('hash_password')
+			.column('salt')
 			.from('user')
-			.where('name = ?', name))
+			.where({ name })
+			.first()
 
 		if (user) {
 			const hashPassword = crypto.sha256(Buffer.from(password, 'hex'), user.salt)
@@ -75,13 +80,14 @@ module.exports = class UserService extends Service {
 	}
 
 	async getfrontendSaltByUsername(name) {
-		const { db } = this.ctx
+		const { knex } = this.app
 
-		const user = await db.queryOneBySquel((squel) => squel
+		const user = await knex
 			.select()
-			.field('frontend_salt')
+			.column('frontend_salt')
 			.from('user')
-			.where('name = ?', name))
+			.where({ name })
+			.first()
 
 		if (user && user.frontend_salt) {
 			return user.frontend_salt.toString('hex')
