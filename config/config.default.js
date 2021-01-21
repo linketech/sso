@@ -11,7 +11,10 @@ const { env } = process
 
 module.exports = (appInfo) => ({
 	keys: `${appInfo.name}_1608715601779_9499`,
-	middleware: ['loginFilter'],
+	middleware: [
+		'loginFilter',
+		'logger',
+	],
 	userConfig: {
 		// myAppName: 'egg',
 	},
@@ -51,7 +54,7 @@ module.exports = (appInfo) => ({
 				host: env.REDIS_HOST || 'localhost',
 				port: env.REDIS_PORT || 6379,
 				password: env.REDIS_PASSWORD || '',
-				db: env.REIDS_DB || 0,
+				db: env.REDIS_DB || 0,
 				keyPrefix: 'sso:session:',
 			},
 		},
@@ -65,5 +68,9 @@ module.exports = (appInfo) => ({
 			public: fs.readFileSync(`${__dirname}/jwt/es256/public.key`),
 			private: fs.readFileSync(`${__dirname}/jwt/es256/private.key`),
 		},
+	},
+	logger: {
+		level: 'NONE',
+		disableConsoleAfterReady: false,
 	},
 })

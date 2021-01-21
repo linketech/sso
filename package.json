@@ -7,6 +7,7 @@
     "declarations": true
   },
   "dependencies": {
+    "chalk": "^4.1.0",
     "egg": "^2.29.1",
     "egg-mysql": "^3.0.0",
     "egg-redis": "^2.4.0",
@@ -23,7 +24,7 @@
     "autod-egg": "^1.1.0",
     "egg-bin": "^4.15.0",
     "egg-mock": "^4.0.1",
-    "eslint": "^7.17.0",
+    "eslint": "^7.18.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1"
   },
