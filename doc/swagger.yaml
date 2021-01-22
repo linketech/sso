@@ -30,7 +30,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  frontendSalt:
+                  frontend_salt:
                     type: string
   /session:
     post:
@@ -45,8 +45,16 @@ paths:
               properties:
                 username:
                   type: string
+                type:
+                  type: integer
+                  description: 密码是否已经HASH过
+                  enum: [0, 1]
+                  example: 1
                 password:
                   type: string
+                  description: 经过hmac-sha256哈希后的值(如果type为1，则输入HASH过的密码，否则输入原始密码)
+                  pattern: '^[0-9a-fA-F]{64}|\w{1,32}$'
+                  example: "746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f"
               required:
                 - username
                 - password
@@ -97,6 +105,41 @@ paths:
                         description: 用户名
       security:
         - cookieAuth: []
+  /session/user:  
+    post:
+      tags:
+        - session
+      summary: 注册
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "ivan"
+                type:
+                  type: integer
+                  description: 密码是否已经HASH过
+                  enum: [0, 1]
+                  example: 1
+                password:
+                  type: string
+                  description: 经过hmac-sha256哈希后的值(如果type为1，则输入HASH过的密码，否则输入原始密码)
+                  pattern: '^[0-9a-fA-F]{64}|\w{1,32}$'
+                  example: "746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f"
+                frontendSalt:
+                  type: string
+                  description: 对原始密码加的盐（如果type为1，则必填）
+                  pattern: '^[0-9a-fA-F]{32}$'
+                  example: "d1b3ab63608e445ca1e26190dd141f89"
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: 请求成功
   /jwt:
     get:
       tags:
@@ -134,37 +177,21 @@ paths:
             application/json:
               schema:
                 type: object
-  /user:
-    post:
+  /user/{username}:
+    delete:
       tags:
         - user
-      summary: 创建用户
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                  example: "ivan"
-                password:
-                  type: string
-                  description: 经过hmac-sha256哈希后的值
-                  pattern: '^[0-9a-fA-F]{64}$'
-                  example: "746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f"
-                frontendSalt:
-                  type: string
-                  description: 对原始密码加的盐
-                  pattern: '^[0-9a-fA-F]{32}$'
-                  example: "d1b3ab63608e445ca1e26190dd141f89"
-              required:
-                - username
-                - password
-                - frontendSalt
+      summary: 删除用户
+      parameters: 
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          example: test
       responses:
         '200':
-          description: 请求成功
+          description: 登出成功
       security: []
 components:
   securitySchemes:

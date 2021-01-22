@@ -1,6 +1,8 @@
 const IGNORE_REQUEST = [
-	['/session', 'POST'],
-	['/session/frontend_salt/', 'GET'],
+	['/session', 'POST'], // 登录
+	['/session/frontend_salt', 'GET'], // 获取登录需要的盐
+	['/session/user', 'POST'], // 注册
+
 	['/jwt/verify/', 'GET'],
 ]
 

@@ -35,7 +35,7 @@ module.exports = class UserService extends Service {
 		let newFrontendSalt
 
 		if (frontendSalt) {
-			newFrontendSalt = frontendSalt
+			newFrontendSalt = Buffer.from(frontendSalt, 'hex')
 			newPassword = Buffer.from(password, 'hex')
 		} else {
 			newFrontendSalt = uuid.v4()
@@ -93,10 +93,7 @@ module.exports = class UserService extends Service {
 			const beforeHashedPassword = type === PASSWORD.HASHED
 				? Buffer.from(password, 'hex')
 				: crypto.sha256(Buffer.from(password, 'ascii'), user.frontend_salt)
-			console.log(beforeHashedPassword.toString('hex'))
 			const hashPassword = crypto.sha256(beforeHashedPassword, user.salt)
-			console.log(hashPassword.toString('hex'))
-			console.log(user.hash_password.toString('hex'))
 			if (hashPassword.equals(user.hash_password)) {
 				return {
 					id: user.id,
