@@ -1,4 +1,5 @@
 const { Controller } = require('egg')
+const { USER: { PASSWORD } } = require('../constant')
 
 module.exports = class SessionController extends Controller {
 	async getfrontendSaltByUsername() {
@@ -30,14 +31,15 @@ module.exports = class SessionController extends Controller {
 		const { ctx, app } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
+		let errors = app.validator.validate({
 			username: {
 				type: 'string',
 				max: 45,
 			},
-			password: {
-				type: 'string',
-				format: /^[0-9a-fA-F]{64}$/,
+			type: {
+				type: 'integer',
+				enum: Object.keys(PASSWORD),
+				required: false,
 			},
 		}, request.body)
 
@@ -46,49 +48,23 @@ module.exports = class SessionController extends Controller {
 			ctx.response.status = 400
 			return
 		}
+		const { username, type = PASSWORD.HASHED } = request.body
 
-		const { username, password } = request.body
-
-		const user = await ctx.service.user.get(username, password)
-
-		if (!user) {
-			ctx.response.body = { message: '账号或密码错误', errors }
-			ctx.response.status = 400
-			return
-		}
-
-		ctx.session.user = {
-			id: user.id.toString('hex'),
-			name: user.name,
-		}
-
-		response.status = 200
-	}
-
-	async createWithNoSalt() {
-		const { ctx, app } = this
-		const { request, response } = ctx
-
-		const errors = app.validator.validate({
-			username: {
-				type: 'string',
-				max: 45,
-			},
+		errors = app.validator.validate({
 			password: {
 				type: 'string',
-				format: /^\w{1,32}$/,
+				format: type === PASSWORD.HASHED ? /^[0-9a-fA-F]{64}$/ : /^\w{1,32}$/,
 			},
 		}, request.body)
-
 		if (errors) {
 			ctx.response.body = { message: '无效请求参数', errors }
 			ctx.response.status = 400
 			return
 		}
 
-		const { username, password } = request.body
+		const { password } = request.body
 
-		const user = await ctx.service.user.getWithNoSalt(username, password)
+		const user = await ctx.service.user.get(username, password, type)
 
 		if (!user) {
 			ctx.response.body = { message: '账号或密码错误', errors }
