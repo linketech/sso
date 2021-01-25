@@ -13,7 +13,6 @@ module.exports = (appInfo) => ({
 	keys: `${appInfo.name}_1608715601779_9499`,
 	middleware: [
 		'logger',
-		'loginFilter',
 	],
 	userConfig: {
 		// myAppName: 'egg',

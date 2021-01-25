@@ -28,7 +28,7 @@ module.exports = class UserController extends Controller {
 			return
 		}
 
-		await ctx.service.user.destroy(username)
+		// await ctx.service.user.destroy(username)
 
 		response.status = 200
 	}
