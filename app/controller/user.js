@@ -21,9 +21,8 @@ module.exports = class UserController extends Controller {
 
 		const { username } = params
 
-		const exixt = await ctx.service.user.checkIfExistByName(username)
-
-		if (!exixt) {
+		const user = await ctx.service.user.getByName(username)
+		if (!user) {
 			ctx.response.body = { message: '用户名不存在' }
 			ctx.response.status = 400
 			return

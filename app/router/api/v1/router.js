@@ -4,7 +4,7 @@
 module.exports = ({ router, controller }) => {
 	const subRouter = router.namespace('/api')
 
-	subRouter.get('/', controller.home.index)
+	subRouter.get('', controller.home.index)
 
 	subRouter.get('/session/frontend_salt/:username', controller.session.getfrontendSaltByUsername)
 	subRouter.post('/session', controller.session.create)

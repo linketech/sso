@@ -12,8 +12,8 @@ const { env } = process
 module.exports = (appInfo) => ({
 	keys: `${appInfo.name}_1608715601779_9499`,
 	middleware: [
-		'loginFilter',
 		'logger',
+		'loginFilter',
 	],
 	userConfig: {
 		// myAppName: 'egg',

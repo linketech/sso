@@ -7,7 +7,7 @@
     "declarations": true
   },
   "dependencies": {
-    "chalk": "^4.1.0",
+    "@z-ivan/koa-logger": "^0.0.3",
     "egg": "^2.29.1",
     "egg-mysql": "^3.0.0",
     "egg-redis": "^2.4.0",

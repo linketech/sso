@@ -147,9 +147,8 @@ module.exports = class SessionController extends Controller {
 
 		const { password, frontendSalt } = request.body
 
-		const exixt = await ctx.service.user.checkIfExistByName(username)
-
-		if (exixt) {
+		const user = await ctx.service.user.getByName(username)
+		if (user) {
 			ctx.response.body = { message: '用户名已经存在' }
 			ctx.response.status = 400
 			return

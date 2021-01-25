@@ -9,6 +9,23 @@ module.exports = class UserService extends Service {
 	 * 检查用户名是否存在
 	 * @param {*} name
 	 */
+	async getByName(name) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column('id')
+			.from('user')
+			.where({ name })
+			.first()
+
+		return user
+	}
+
+	/**
+	 * 检查用户名是否存在
+	 * @param {*} name
+	 */
 	async checkIfExistByName(name) {
 		const { knex } = this.app
 
@@ -28,7 +45,7 @@ module.exports = class UserService extends Service {
 	 * @param {String} password
 	 * @param {String} frontendSalt Hex String
 	 */
-	async create(name, password, frontendSalt) {
+	async create(name, password, frontendSalt, role_id = null) {
 		const { knex } = this.app
 
 		let newPassword
@@ -45,16 +62,20 @@ module.exports = class UserService extends Service {
 		const salt = uuid.v4()
 		const hashPassword = crypto.sha256(newPassword, salt)
 
+		const id = uuid.v4()
 		await knex
 			.insert({
-				id: uuid.v4(),
+				id,
 				name,
 				hash_password: hashPassword,
 				salt,
 				frontend_salt: newFrontendSalt,
+				role_id,
 				create_time: Date.now(),
 			})
 			.into('user')
+
+		return { id }
 	}
 
 	/**

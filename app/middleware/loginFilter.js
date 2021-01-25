@@ -11,12 +11,7 @@ module.exports = () => async (ctx, next) => {
 
 	const ignore = IGNORE_REQUEST.find(([matchUrl, matchMethod]) => path.startsWith(`/api${matchUrl}`) && method === matchMethod)
 
-	if (ignore) {
-		await next()
-		return
-	}
-
-	if (ctx.session && ctx.session.user) {
+	if (ignore || (ctx.session && ctx.session.user)) {
 		await next()
 		return
 	}
