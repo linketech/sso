@@ -37,11 +37,13 @@ class AppBootHook {
 
 		const codePermissions = router.stack
 			.filter((s) => !!s.stack.find((ss) => ss.name === 'permissionFilter'))
-			.map((a) => a.methods.map((method) => ({
-				path: a.path,
-				method,
-				regexp: a.regexp.toString(),
-			}))).flat()
+			.map((a) => a.methods
+				.filter((method) => ['POST', 'DELETE', 'PUT', 'GET'].includes(method))
+				.map((method) => ({
+					path: a.path,
+					method,
+					regexp: a.regexp.toString(),
+				}))).flat()
 
 		const chain = {}
 		;[codePermissions, dbPermissions].forEach((list, index) => {

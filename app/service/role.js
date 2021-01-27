@@ -2,7 +2,7 @@ const { Service } = require('egg')
 
 const uuid = require('../util/uuid')
 
-module.exports = class UserService extends Service {
+module.exports = class RoleService extends Service {
 	async getByName(name) {
 		const { knex } = this.app
 
@@ -27,5 +27,15 @@ module.exports = class UserService extends Service {
 			})
 			.into('role')
 		return { id }
+	}
+
+	async list() {
+		const { knex } = this.app
+		const roles = await knex
+			.select()
+			.column('name')
+			.from('role')
+
+		return roles
 	}
 }

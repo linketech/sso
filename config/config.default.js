@@ -17,6 +17,9 @@ module.exports = (appInfo) => ({
 	userConfig: {
 		// myAppName: 'egg',
 	},
+	i18n: {
+		defaultLocale: 'zh-CN',
+	},
 	security: {
 		csrf: {
 			enable: false,

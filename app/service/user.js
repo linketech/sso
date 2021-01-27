@@ -142,4 +142,12 @@ module.exports = class UserService extends Service {
 
 		return undefined
 	}
+
+	async updateRole(id, roleId) {
+		const { knex } = this.app
+		await knex
+			.update({ role_id: roleId })
+			.table('user')
+			.where({ id })
+	}
 }
