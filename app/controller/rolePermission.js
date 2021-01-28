@@ -3,14 +3,14 @@ const { Controller } = require('egg')
 module.exports = class RolePermissionController extends Controller {
 	async index() {
 		const { ctx, app } = this
-		const { params, response } = ctx
+		const { request, response } = ctx
 
 		const errors = app.validator.validate({
-			name: {
+			role_id: {
 				type: 'string',
-				max: 45,
+				format: /^[0-9A-Fa-f]{32}$/,
 			},
-		}, params)
+		}, request.query)
 
 		if (errors) {
 			response.body = { message: '无效请求参数', errors }
@@ -18,32 +18,29 @@ module.exports = class RolePermissionController extends Controller {
 			return
 		}
 
-		const { name } = params
+		const roleId = Buffer.from(request.query.role_id, 'hex')
 
-		const role = await ctx.service.role.getByName(name)
+		const role = await ctx.service.role.getById(roleId)
 		if (!role) {
-			ctx.response.body = { message: '权限组名不存在' }
+			ctx.response.body = { message: '权限组不存在' }
 			ctx.response.status = 400
 			return
 		}
 
-		const permissions = await ctx.service.rolePermission.getByRoleId(role.id)
+		const permissions = await ctx.service.rolePermission.getByRoleId(roleId)
 		response.body = permissions
 	}
 
-	async create() {
+	async add() {
 		const { ctx, app } = this
-		const { params, request, response } = ctx
+		const { request, response } = ctx
 
-		const paramsErrors = app.validator.validate({
-			name: {
+		const errors = app.validator.validate({
+			role_id: {
 				type: 'string',
-				max: 45,
+				format: /^[0-9A-Fa-f]{32}$/,
 			},
-		}, params)
-
-		const bodyErrors = app.validator.validate({
-			id_list: {
+			permission_id_list: {
 				type: 'array',
 				itemType: 'string',
 				rule: {
@@ -53,27 +50,19 @@ module.exports = class RolePermissionController extends Controller {
 			},
 		}, request.body)
 
-		if (paramsErrors || bodyErrors) {
-			const errors = []
-			if (paramsErrors) {
-				errors.push(...paramsErrors)
-			}
-			if (bodyErrors) {
-				errors.push(...bodyErrors)
-			}
+		if (errors) {
 			response.body = { message: '无效请求参数', errors }
 			response.status = 400
 			return
 		}
 
-		const { name } = params
-
-		const idList = request.body.id_list
+		const roleId = Buffer.from(request.body.role_id, 'hex')
+		const idList = request.body.permission_id_list
 		const bufferIdList = idList.map((id) => Buffer.from(id, 'hex'))
 
-		const role = await ctx.service.role.getByName(name)
+		const role = await ctx.service.role.getById(roleId)
 		if (!role) {
-			ctx.response.body = { message: '权限组名不存在' }
+			ctx.response.body = { message: '权限组不存在' }
 			ctx.response.status = 400
 			return
 		}
@@ -87,7 +76,7 @@ module.exports = class RolePermissionController extends Controller {
 			return
 		}
 
-		const hasPermissions = await ctx.service.rolePermission.getByRoleId(role.id)
+		const hasPermissions = await ctx.service.rolePermission.getByRoleId(roleId)
 		const alreadyHasPermissions = idList
 			.filter((id) => hasPermissions.find((permission) => permission.id.toUpperCase() === id.toUpperCase()))
 		if (alreadyHasPermissions && alreadyHasPermissions.length > 0) {
@@ -96,23 +85,20 @@ module.exports = class RolePermissionController extends Controller {
 			return
 		}
 
-		await ctx.service.rolePermission.create(role.id, bufferIdList)
+		await ctx.service.rolePermission.create(roleId, bufferIdList)
 		response.status = 200
 	}
 
-	async destroy() {
+	async subtract() {
 		const { ctx, app } = this
-		const { params, request, response } = ctx
+		const { request, response } = ctx
 
-		const paramsErrors = app.validator.validate({
-			name: {
+		const errors = app.validator.validate({
+			role_id: {
 				type: 'string',
-				max: 45,
+				format: /^[0-9A-Fa-f]{32}$/,
 			},
-		}, params)
-
-		const bodyErrors = app.validator.validate({
-			id_list: {
+			permission_id_list: {
 				type: 'array',
 				itemType: 'string',
 				rule: {
@@ -122,27 +108,19 @@ module.exports = class RolePermissionController extends Controller {
 			},
 		}, request.body)
 
-		if (paramsErrors || bodyErrors) {
-			const errors = []
-			if (paramsErrors) {
-				errors.push(...paramsErrors)
-			}
-			if (bodyErrors) {
-				errors.push(...bodyErrors)
-			}
+		if (errors) {
 			response.body = { message: '无效请求参数', errors }
 			response.status = 400
 			return
 		}
 
-		const { name } = params
-
-		const idList = request.body.id_list
+		const roleId = Buffer.from(request.body.role_id, 'hex')
+		const idList = request.body.permission_id_list
 		const bufferIdList = idList.map((id) => Buffer.from(id, 'hex'))
 
-		const role = await ctx.service.role.getByName(name)
+		const role = await ctx.service.role.getById(roleId)
 		if (!role) {
-			ctx.response.body = { message: '权限组名不存在' }
+			ctx.response.body = { message: '权限组不存在' }
 			ctx.response.status = 400
 			return
 		}
@@ -171,17 +149,14 @@ module.exports = class RolePermissionController extends Controller {
 
 	async update() {
 		const { ctx, app } = this
-		const { params, request, response } = ctx
+		const { request, response } = ctx
 
-		const paramsErrors = app.validator.validate({
-			name: {
+		const errors = app.validator.validate({
+			role_id: {
 				type: 'string',
-				max: 45,
+				format: /^[0-9A-Fa-f]{32}$/,
 			},
-		}, params)
-
-		const bodyErrors = app.validator.validate({
-			id_list: {
+			permission_id_list: {
 				type: 'array',
 				itemType: 'string',
 				rule: {
@@ -191,27 +166,19 @@ module.exports = class RolePermissionController extends Controller {
 			},
 		}, request.body)
 
-		if (paramsErrors || bodyErrors) {
-			const errors = []
-			if (paramsErrors) {
-				errors.push(...paramsErrors)
-			}
-			if (bodyErrors) {
-				errors.push(...bodyErrors)
-			}
+		if (errors) {
 			response.body = { message: '无效请求参数', errors }
 			response.status = 400
 			return
 		}
 
-		const { name } = params
-
-		const idList = request.body.id_list
+		const roleId = Buffer.from(request.body.role_id, 'hex')
+		const idList = request.body.permission_id_list
 		const bufferIdList = idList.map((id) => Buffer.from(id, 'hex'))
 
-		const role = await ctx.service.role.getByName(name)
+		const role = await ctx.service.role.getById(roleId)
 		if (!role) {
-			ctx.response.body = { message: '权限组名不存在' }
+			ctx.response.body = { message: '权限组不存在' }
 			ctx.response.status = 400
 			return
 		}

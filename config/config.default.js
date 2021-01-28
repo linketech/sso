@@ -42,7 +42,7 @@ module.exports = (appInfo) => ({
 			},
 			pool: {
 				min: 0,
-				max: 5,
+				max: 10,
 			},
 			acquireConnectionTimeout: 5000,
 		},

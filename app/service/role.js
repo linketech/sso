@@ -16,6 +16,19 @@ module.exports = class RoleService extends Service {
 		return root
 	}
 
+	async getById(id) {
+		const { knex } = this.app
+
+		const root = await knex
+			.select()
+			.column('id')
+			.from('role')
+			.where({ id })
+			.first()
+
+		return root
+	}
+
 	async create(name) {
 		const { knex } = this.app
 		const id = uuid.v4()
@@ -33,9 +46,18 @@ module.exports = class RoleService extends Service {
 		const { knex } = this.app
 		const roles = await knex
 			.select()
+			.column(knex.raw('hex(id) as id'))
 			.column('name')
 			.from('role')
 
 		return roles
+	}
+
+	async destroy(id) {
+		const { knex } = this.app
+
+		await knex('role')
+			.where({ id })
+			.del()
 	}
 }

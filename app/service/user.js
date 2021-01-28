@@ -24,6 +24,23 @@ module.exports = class UserService extends Service {
 
 	/**
 	 * 检查用户名是否存在
+	 * @param {*} id
+	 */
+	async getById(id) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column(knex.raw('1'))
+			.from('user')
+			.where({ id })
+			.first()
+
+		return user
+	}
+
+	/**
+	 * 检查用户名是否存在
 	 * @param {*} name
 	 */
 	async checkIfExistByName(name) {
@@ -80,13 +97,13 @@ module.exports = class UserService extends Service {
 
 	/**
 	 *
-	 * @param {String} name
+	 * @param {String} id
 	 */
-	async destroy(name) {
+	async destroy(id) {
 		const { knex } = this.app
 
 		await knex('user')
-			.where({ name })
+			.where({ id })
 			.del()
 	}
 
@@ -149,5 +166,18 @@ module.exports = class UserService extends Service {
 			.update({ role_id: roleId })
 			.table('user')
 			.where({ id })
+	}
+
+	async list() {
+		const { knex } = this.app
+		const roles = await knex
+			.select()
+			.column(knex.raw('hex(user.id) as id'))
+			.column('user.name')
+			.column(knex.raw('hex(role.id) as role_id'))
+			.column('role.name as role_name')
+			.from('user')
+			.leftJoin('role', 'user.role_id', 'role.id')
+		return roles
 	}
 }

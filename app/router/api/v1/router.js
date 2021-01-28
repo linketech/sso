@@ -73,16 +73,18 @@ module.exports = ({ router, controller }) => {
 	subRouter.get('/jwt', loginFilter, permissionFilter, controller.jwt.get)
 	subRouter.get('/jwt/verify/:token', controller.jwt.verify)
 
-	subRouter.delete('/user/:name', loginFilter, permissionFilter, controller.user.destroy)
-	subRouter.put('/user/:name/:role_name', loginFilter, permissionFilter, controller.user.updateRole)
+	subRouter.get('/user', loginFilter, permissionFilter, controller.user.index)
+	subRouter.put('/user', loginFilter, permissionFilter, controller.user.update)
+	subRouter.delete('/user', loginFilter, permissionFilter, controller.user.destroy)
 
 	subRouter.get('/role', loginFilter, permissionFilter, controller.role.index)
 	subRouter.post('/role', loginFilter, permissionFilter, controller.role.create)
+	subRouter.delete('/role', loginFilter, permissionFilter, controller.role.destroy)
 
 	subRouter.get('/permission', loginFilter, permissionFilter, controller.permission.index)
 
-	subRouter.get('/role/:name/permission', loginFilter, permissionFilter, controller.rolePermission.index) // 查看有哪些权限
-	subRouter.post('/role/:name/permission', loginFilter, permissionFilter, controller.rolePermission.create) // 批量增加权限
-	subRouter.delete('/role/:name/permission', loginFilter, permissionFilter, controller.rolePermission.destroy) // 批量删除权限
-	subRouter.put('/role/:name/permission', loginFilter, permissionFilter, controller.rolePermission.update) // 批量更新权限（更新为上传的权限）
+	subRouter.get('/role/permission', loginFilter, permissionFilter, controller.rolePermission.index)
+	subRouter.put('/role/permission/add', loginFilter, permissionFilter, controller.rolePermission.add)
+	subRouter.put('/role/permission/subtract', loginFilter, permissionFilter, controller.rolePermission.subtract)
+	subRouter.put('/role/permission', loginFilter, permissionFilter, controller.rolePermission.update)
 }

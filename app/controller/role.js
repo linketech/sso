@@ -41,4 +41,35 @@ module.exports = class UserController extends Controller {
 
 		response.status = 200
 	}
+
+	async destroy() {
+		const { ctx, app } = this
+		const { request, response } = ctx
+
+		const errors = app.validator.validate({
+			id: {
+				type: 'string',
+				format: /^[0-9A-Fa-f]{32}$/,
+			},
+		}, request.query)
+
+		if (errors) {
+			response.body = { message: '无效请求参数', errors }
+			response.status = 400
+			return
+		}
+
+		const id = Buffer.from(request.query.id, 'hex')
+
+		const role = await ctx.service.role.getById(id)
+		if (!role) {
+			ctx.response.body = { message: '权限组不存在' }
+			ctx.response.status = 400
+			return
+		}
+
+		await ctx.service.role.destroy(id)
+
+		response.status = 200
+	}
 }

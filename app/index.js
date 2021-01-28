@@ -93,7 +93,9 @@ class AppBootHook {
 					})
 				}
 
-				await Promise.all(promiseList)
+				if (promiseList && promiseList.length > 0) {
+					await Promise.all(promiseList)
+				}
 			})
 			logger.info(`增加${addList.length}条权限`)
 			logger.info(`删除${subList.length}条权限`)

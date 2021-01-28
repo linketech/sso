@@ -143,7 +143,7 @@ paths:
   /jwt:
     get:
       tags:
-        - jwt
+        - JWT
       summary: 获取JWT
       responses:
         '200':
@@ -161,7 +161,7 @@ paths:
   /jwt/verify/{token}:
     get:
       tags:
-        - jwt
+        - JWT
       summary: 验证JWT是否合法
       parameters: 
         - name: token
@@ -172,27 +172,246 @@ paths:
           example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJpdmFuIn0sImlhdCI6MTYxMDUyOTg3OX0.V5o45Pkh_aGPrvzydb_9iRUPGQGCePEMmRFrFLSILGeMGS7tW3WjXt3YJRU9DJ1KZYQRv4DG5KxkKfVKA2RpSw
       responses:
         '200':
-          description: 修改成功
+          description: 请求成功
           content:
             application/json:
               schema:
                 type: object
-  /user/{username}:
-    delete:
+      security:
+        - cookieAuth: []
+  /user:
+    get:
       tags:
-        - user
-      summary: 删除用户
-      parameters: 
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-          example: test
+        - 用户
+      summary: 查看所有用户
       responses:
         '200':
-          description: 登出成功
-      security: []
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 用户ID
+                  name:
+                    type: string
+                    description: 用户名
+                  role_id:
+                    type: string
+                    description: 权限组ID
+                  role_name:
+                    type: string
+                    description: 权限组名
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 用户
+      summary: 修改用户
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: 用户ID
+                role_id:
+                  type: string
+                  description: 权限组ID
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+    delete:
+      tags:
+        - 用户
+      summary: 删除用户
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 用户ID
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /role:
+    get:
+      tags:
+        - 权限组
+      summary: 查看所有权限组
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 权限组ID
+                  name:
+                    type: string
+                    description: 权限组名
+      security:
+        - cookieAuth: []
+    post:
+      tags:
+        - 权限组
+      summary: 创建权限组
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 权限组名
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+    delete:
+      tags:
+        - 权限组
+      summary: 删除权限组
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 用户ID
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /permission:
+    get:
+      tags:
+        - 权限组
+      summary: 查看所有权限
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 权限ID
+                  path:
+                    type: string
+                    description: 权限的HTTP请求路径
+                  method:
+                    type: string
+                    description: 权限的HTTP请求方法
+      security:
+        - cookieAuth: []
+  /role/permission:
+    get:
+      tags:
+        - 权限组与权限的关系
+      summary: 查看权限组拥有的权限
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 权限ID
+                  path:
+                    type: string
+                    description: 权限的HTTP请求路径
+                  method:
+                    type: string
+                    description: 权限的HTTP请求方法
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 权限组与权限的关系
+      summary: 更新权限组与权限
+      description: 清除之前的关系，以上传的为最终结果
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_id:
+                  type: string
+                  description: 权限组ID
+                permission_id_list:
+                  type: string
+                  description: 权限ID集合
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /role/permission/add:
+    put:
+      tags:
+        - 权限组与权限的关系
+      summary: 更新权限组与权限
+      description: 只增加权限
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_id:
+                  type: string
+                  description: 权限组ID
+                permission_id_list:
+                  type: string
+                  description: 权限ID集合
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /role/permission/subtract:
+    put:
+      tags:
+        - 权限组与权限的关系
+      summary: 更新权限组与权限
+      description: 只增加权限
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_id:
+                  type: string
+                  description: 权限组ID
+                permission_id_list:
+                  type: string
+                  description: 权限ID集合
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
 components:
   securitySchemes:
     cookieAuth:
