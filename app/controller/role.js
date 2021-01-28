@@ -68,6 +68,12 @@ module.exports = class UserController extends Controller {
 			return
 		}
 
+		if (role.name === 'admin') {
+			ctx.response.body = { message: '不能删除Admin权限组' }
+			ctx.response.status = 400
+			return
+		}
+
 		await ctx.service.role.destroy(id)
 
 		response.status = 200

@@ -23,7 +23,7 @@ module.exports = class UserService extends Service {
 	}
 
 	/**
-	 * 检查用户名是否存在
+	 * 根据ID获取用户信息
 	 * @param {*} id
 	 */
 	async getById(id) {
@@ -31,7 +31,7 @@ module.exports = class UserService extends Service {
 
 		const user = await knex
 			.select()
-			.column(knex.raw('1'))
+			.column('name')
 			.from('user')
 			.where({ id })
 			.first()
@@ -123,11 +123,18 @@ module.exports = class UserService extends Service {
 			.column('hash_password')
 			.column('salt')
 			.column('frontend_salt')
+			.column('disabled')
 			.from('user')
 			.where({ name })
 			.first()
 
 		if (user) {
+			if (user.disabled !== 0) {
+				return {
+					disabeld: user.disabled,
+				}
+			}
+
 			const beforeHashedPassword = type === PASSWORD.HASHED
 				? Buffer.from(password, 'hex')
 				: crypto.sha256(Buffer.from(password, 'ascii'), user.frontend_salt)
@@ -136,6 +143,7 @@ module.exports = class UserService extends Service {
 				return {
 					id: user.id,
 					name: user.name,
+					disabled: user.disabled,
 				}
 			}
 		}
@@ -160,10 +168,13 @@ module.exports = class UserService extends Service {
 		return undefined
 	}
 
-	async updateRole(id, roleId) {
+	async updateRole(id, { role_id: roleId, disabled }) {
 		const { knex } = this.app
 		await knex
-			.update({ role_id: roleId })
+			.update({
+				role_id: roleId,
+				disabled,
+			})
 			.table('user')
 			.where({ id })
 	}
@@ -176,6 +187,7 @@ module.exports = class UserService extends Service {
 			.column('user.name')
 			.column(knex.raw('hex(role.id) as role_id'))
 			.column('role.name as role_name')
+			.column('user.disabled')
 			.from('user')
 			.leftJoin('role', 'user.role_id', 'role.id')
 		return roles

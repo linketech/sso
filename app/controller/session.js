@@ -72,6 +72,12 @@ module.exports = class SessionController extends Controller {
 			return
 		}
 
+		if (user.disabled !== 0) {
+			ctx.response.body = { message: '账号已被停用', errors }
+			ctx.response.status = 400
+			return
+		}
+
 		ctx.session.user = {
 			id: user.id.toString('hex'),
 			name: user.name,

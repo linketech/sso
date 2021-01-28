@@ -22,6 +22,12 @@ module.exports = class UserController extends Controller {
 			role_id: {
 				type: 'string',
 				format: /^[0-9A-Fa-f]{32}$/,
+				required: false,
+			},
+			disabled: {
+				type: 'enum',
+				values: [0, 1],
+				required: false,
 			},
 		}, request.body)
 
@@ -32,7 +38,8 @@ module.exports = class UserController extends Controller {
 		}
 
 		const id = Buffer.from(request.body.id, 'hex')
-		const roleId = Buffer.from(request.body.role_id, 'hex')
+		const roleId = request.body.role_id && Buffer.from(request.body.role_id, 'hex')
+		const { disabled } = request.body
 
 		const user = await ctx.service.user.getById(id)
 		if (!user) {
@@ -41,14 +48,23 @@ module.exports = class UserController extends Controller {
 			return
 		}
 
-		const role = await ctx.service.role.getById(roleId)
-		if (!role) {
-			response.body = { message: '权限组不存在' }
-			response.status = 400
-			return
+		const newRole = {}
+
+		if (roleId) {
+			const role = await ctx.service.role.getById(roleId)
+			if (!role) {
+				response.body = { message: '权限组不存在' }
+				response.status = 400
+				return
+			}
+			newRole.role_id = roleId
 		}
 
-		await ctx.service.user.updateRole(id, roleId)
+		if (disabled !== undefined) {
+			newRole.disabled = disabled
+		}
+
+		await ctx.service.user.updateRole(id, newRole)
 
 		response.status = 200
 	}
@@ -75,6 +91,11 @@ module.exports = class UserController extends Controller {
 		const user = await ctx.service.user.getById(id)
 		if (!user) {
 			ctx.response.body = { message: '用户不存在' }
+			ctx.response.status = 400
+			return
+		}
+		if (user.name === 'admin') {
+			ctx.response.body = { message: '不能删除Admin用户' }
 			ctx.response.status = 400
 			return
 		}

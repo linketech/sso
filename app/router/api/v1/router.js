@@ -84,7 +84,7 @@ module.exports = ({ router, controller }) => {
 	subRouter.get('/permission', loginFilter, permissionFilter, controller.permission.index)
 
 	subRouter.get('/role/permission', loginFilter, permissionFilter, controller.rolePermission.index)
-	subRouter.put('/role/permission/add', loginFilter, permissionFilter, controller.rolePermission.add)
-	subRouter.put('/role/permission/subtract', loginFilter, permissionFilter, controller.rolePermission.subtract)
+	subRouter.put('/role/permission/add', loginFilter, permissionFilter, controller.rolePermission.update)
+	subRouter.put('/role/permission/subtract', loginFilter, permissionFilter, controller.rolePermission.update)
 	subRouter.put('/role/permission', loginFilter, permissionFilter, controller.rolePermission.update)
 }

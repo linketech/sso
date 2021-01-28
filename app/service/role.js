@@ -22,6 +22,7 @@ module.exports = class RoleService extends Service {
 		const root = await knex
 			.select()
 			.column('id')
+			.column('name')
 			.from('role')
 			.where({ id })
 			.first()

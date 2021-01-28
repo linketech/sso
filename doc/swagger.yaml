@@ -204,6 +204,9 @@ paths:
                   role_name:
                     type: string
                     description: 权限组名
+                  disabled:
+                    type: string
+                    description: 是否被停用
       security:
         - cookieAuth: []
     put:
@@ -222,6 +225,9 @@ paths:
                 role_id:
                   type: string
                   description: 权限组ID
+                disabled:
+                  type: string
+                  description: 停用（0为不停用，1为停用）
       responses:
         '200':
           description: 请求成功
