@@ -9,7 +9,6 @@
   "dependencies": {
     "@z-ivan/koa-logger": "^0.0.3",
     "egg": "^2.29.1",
-    "egg-mysql": "^3.0.0",
     "egg-redis": "^2.4.0",
     "egg-router-plus": "^1.3.1",
     "egg-scripts": "^2.13.0",
@@ -17,13 +16,11 @@
     "egg-validate": "^2.0.2",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.16",
+    "mysql": "^2.18.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "autod": "^3.1.1",
-    "autod-egg": "^1.1.0",
     "egg-bin": "^4.15.0",
-    "egg-mock": "^4.0.1",
     "eslint": "^7.18.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1"
@@ -36,12 +33,9 @@
     "stop": "egg-scripts stop --title=egg-server-sso",
     "dev": "egg-bin dev",
     "debug": "egg-bin debug",
-    "test": "npm run lint -- --fix && npm run test-local",
-    "test-local": "egg-bin test",
-    "cov": "egg-bin cov",
+    "test": "npm run lint -- --fix",
     "lint": "eslint .",
-    "ci": "npm run lint && npm run cov",
-    "autod": "autod"
+    "ci": "npm run lint"
   },
   "ci": {
     "version": "14"
