@@ -1,60 +1,5 @@
-async function loginFilter(ctx, next) {
-	const { response } = ctx
-
-	if (ctx.session && ctx.session.user) {
-		await next()
-		return
-	}
-
-	response.status = 401
-	response.body = { message: '需要先登录' }
-}
-
-async function permissionFilter(ctx, next) {
-	const { path } = ctx.matched[0]
-	const { method } = ctx.request
-	const userId = Buffer.from(ctx.session.user.id, 'hex')
-
-	const { knex } = ctx.app
-
-	const user = await knex
-		.select()
-		.column({ role_id: 'role.id' })
-		.column({ role_name: 'role.name' })
-		.from('user')
-		.leftJoin('role', 'user.role_id', 'role.id')
-		.where({
-			'user.id': userId,
-		})
-		.first()
-
-	if (user && user.role_name === 'admin') {
-		await next()
-		return
-	}
-
-	const permission = await knex
-		.select()
-		.column({ permission_id: 'permission.id' })
-		.from('role_has_permission')
-		.leftJoin('permission', 'role_has_permission.permission_id', 'permission.id')
-		.where({
-			'permission.path': path,
-			'permission.method': method,
-		})
-		.where({
-			'role_has_permission.role_id': user.role_id,
-		})
-		.first()
-
-	if (permission) {
-		await next()
-		return
-	}
-
-	ctx.response.status = 403
-	ctx.response.body = { message: '权限不足' }
-}
+const loginFilter = require('./loginFilter')
+const permissionFilter = require('./permissionFilter')
 
 /**
  * @param {Egg.Application} app - egg application
@@ -87,4 +32,13 @@ module.exports = ({ router, controller }) => {
 	subRouter.put('/role/permission/add', loginFilter, permissionFilter, controller.rolePermission.update)
 	subRouter.put('/role/permission/subtract', loginFilter, permissionFilter, controller.rolePermission.update)
 	subRouter.put('/role/permission', loginFilter, permissionFilter, controller.rolePermission.update)
+
+	subRouter.get('/website', loginFilter, permissionFilter, controller.website.index)
+	subRouter.post('/website', loginFilter, permissionFilter, controller.website.create)
+	subRouter.delete('/website', loginFilter, permissionFilter, controller.website.destroy)
+	subRouter.put('/website', loginFilter, permissionFilter, controller.website.update)
+
+	subRouter.get('/role/website', loginFilter, permissionFilter, controller.roleWebsite.index)
+	subRouter.post('/role/website', loginFilter, permissionFilter, controller.roleWebsite.create)
+	subRouter.delete('/role/website', loginFilter, permissionFilter, controller.roleWebsite.destroy)
 }

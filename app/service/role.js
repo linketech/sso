@@ -30,6 +30,21 @@ module.exports = class RoleService extends Service {
 		return root
 	}
 
+	async getByUserId(user_id) {
+		const { knex } = this.app
+
+		const root = await knex
+			.select()
+			.column('role.id')
+			.column('role.name')
+			.from('role')
+			.leftJoin('user', 'role.id', 'user.role_id')
+			.where({ 'user.id': user_id })
+			.first()
+
+		return root
+	}
+
 	async create(name) {
 		const { knex } = this.app
 		const id = uuid.v4()

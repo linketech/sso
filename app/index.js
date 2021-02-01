@@ -14,13 +14,13 @@ class AppBootHook {
 
 		let adminRole = await ctx.service.role.getByName('admin')
 		if (!adminRole) {
-			adminRole = ctx.service.role.create('admin')
+			adminRole = await ctx.service.role.create('admin')
 			logger.info('增加角色：admin')
 		}
 
 		let adminUser = await ctx.service.user.getByName('admin')
 		if (!adminUser) {
-			adminUser = ctx.service.user.create('admin', 'admin', null, adminRole.id)
+			adminUser = await ctx.service.user.create('admin', 'admin', null, adminRole.id)
 			logger.info('增加用户：admin')
 		}
 	}
@@ -104,10 +104,8 @@ class AppBootHook {
 
 	// 文件加载完成
 	async didLoad() {
-		await Promise.all([
-			this.init(),
-			this.updatePermissions(),
-		])
+		await this.init()
+		await this.updatePermissions()
 	}
 }
 

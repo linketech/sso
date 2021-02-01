@@ -9,6 +9,12 @@ module.exports = class RolePermissionController extends Controller {
 			role_id: {
 				type: 'string',
 				format: /^[0-9A-Fa-f]{32}$/,
+				required: false,
+			},
+			permission_id: {
+				type: 'string',
+				format: /^[0-9A-Fa-f]{32}$/,
+				required: false,
 			},
 		}, request.query)
 
@@ -18,16 +24,13 @@ module.exports = class RolePermissionController extends Controller {
 			return
 		}
 
-		const roleId = Buffer.from(request.query.role_id, 'hex')
+		const role_id = request.query.role_id && Buffer.from(request.query.role_id, 'hex')
+		const permission_id = request.query.permission_id && Buffer.from(request.query.permission_id, 'hex')
 
-		const role = await ctx.service.role.getById(roleId)
-		if (!role) {
-			ctx.response.body = { message: '权限组不存在' }
-			ctx.response.status = 400
-			return
-		}
-
-		const permissions = await ctx.service.rolePermission.getByRoleId(roleId)
+		const permissions = await ctx.service.rolePermission.list({
+			role_id,
+			permission_id,
+		})
 		response.body = permissions
 	}
 
@@ -56,11 +59,11 @@ module.exports = class RolePermissionController extends Controller {
 			return
 		}
 
-		const roleId = Buffer.from(request.body.role_id, 'hex')
+		const role_id = Buffer.from(request.body.role_id, 'hex')
 		const idList = request.body.permission_id_list
 		const bufferIdList = idList.map((id) => Buffer.from(id, 'hex'))
 
-		const role = await ctx.service.role.getById(roleId)
+		const role = await ctx.service.role.getById(role_id)
 		if (!role) {
 			ctx.response.body = { message: '权限组不存在' }
 			ctx.response.status = 400
@@ -77,7 +80,7 @@ module.exports = class RolePermissionController extends Controller {
 		const notExistPermissions = idList
 			.filter((id) => !permissions.find((permission) => permission.id.toUpperCase() === id.toUpperCase()))
 		if (notExistPermissions && notExistPermissions.length > 0) {
-			ctx.response.body = { message: '权限ID不存在', values: notExistPermissions }
+			ctx.response.body = { message: '权限组ID不存在', values: notExistPermissions }
 			ctx.response.status = 400
 			return
 		}
@@ -87,7 +90,7 @@ module.exports = class RolePermissionController extends Controller {
 			await ctx.service.rolePermission.update(role.id, bufferIdList)
 			response.status = 200
 		} else if (path === '/api/role/permission/add') {
-			const hasPermissions = await ctx.service.rolePermission.getByRoleId(roleId)
+			const hasPermissions = await ctx.service.rolePermission.list({ role_id })
 			const alreadyHasPermissions = idList
 				.filter((id) => hasPermissions.find((permission) => permission.id.toUpperCase() === id.toUpperCase()))
 			if (alreadyHasPermissions && alreadyHasPermissions.length > 0) {
@@ -95,10 +98,10 @@ module.exports = class RolePermissionController extends Controller {
 				ctx.response.status = 400
 				return
 			}
-			await ctx.service.rolePermission.create(roleId, bufferIdList)
+			await ctx.service.rolePermission.create(role_id, bufferIdList)
 			response.status = 200
 		} else if (path === '/api/role/permission/subtract') {
-			const hasPermissions = await ctx.service.rolePermission.getByRoleId(role.id)
+			const hasPermissions = await ctx.service.rolePermission.list({ role_id })
 			const notHasPermissions = idList
 				.filter((id) => !hasPermissions.find((permission) => permission.id.toUpperCase() === id.toUpperCase()))
 			if (notHasPermissions && notHasPermissions.length > 0) {

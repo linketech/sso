@@ -1,16 +1,27 @@
 const { Service } = require('egg')
 
 module.exports = class RolePermissionService extends Service {
-	async getByRoleId(roleId) {
+	async list({ role_id, permission_id } = {}) {
 		const { knex } = this.app
 		const permissions = await knex
 			.select()
-			.column(knex.raw('hex(permission_id) as id'))
-			.column('permission.path')
-			.column('permission.method')
+			.column(knex.raw('hex(role_id) as role_id'))
+			.column({ role_name: 'role.name' })
+			.column(knex.raw('hex(permission_id) as permission_id'))
+			.column({ permission_path: 'permission.path' })
+			.column({ permission_method: 'permission.method' })
 			.from('role_has_permission')
+			.leftJoin('role', 'role_has_permission.role_id', 'role.id')
 			.leftJoin('permission', 'role_has_permission.permission_id', 'permission.id')
-			.where({ 'role_has_permission.role_id': roleId })
+			.where((builder) => {
+				if (role_id !== undefined) {
+					builder.where('role_has_permission.role_id', role_id)
+				}
+				if (permission_id !== undefined) {
+					builder.where('role_has_permission.permission_id', permission_id)
+				}
+				return builder
+			})
 		return permissions
 	}
 

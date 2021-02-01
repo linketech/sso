@@ -7,7 +7,7 @@
     "declarations": true
   },
   "dependencies": {
-    "@z-ivan/koa-logger": "^0.0.3",
+    "@z-ivan/koa-logger": "^0.0.4",
     "egg": "^2.29.1",
     "egg-redis": "^2.4.0",
     "egg-router-plus": "^1.3.1",
@@ -15,13 +15,13 @@
     "egg-session-redis": "^2.1.0",
     "egg-validate": "^2.0.2",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.21.16",
+    "knex": "^0.21.17",
     "mysql": "^2.18.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "egg-bin": "^4.15.0",
-    "eslint": "^7.18.0",
+    "eslint": "^7.19.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1"
   },

@@ -16,11 +16,25 @@ module.exports = class JwtController extends Controller {
 		const { ctx } = this
 		const { response } = ctx
 
+		const user_id = Buffer.from(ctx.session.user.id, 'hex')
+		const role = await ctx.service.role.getByUserId(user_id)
+
+		let websites = []
+		if (role.name === 'admin') {
+			websites = await ctx.service.website.getByAdmin()
+		} else {
+			websites = await ctx.service.website.getByRoleId(role.id)
+		}
+
 		response.body = {
 			token: jwt.sign({
 				user: {
 					name: ctx.session.user.name,
 				},
+				role: {
+					name: role.name,
+				},
+				websites: websites.map(({ name }) => name),
 			}, this.PRIVATE_KEY, { algorithm: 'ES256' }),
 		}
 	}

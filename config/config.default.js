@@ -41,7 +41,7 @@ module.exports = (appInfo) => ({
 				database: 'sso',
 			},
 			pool: {
-				min: 0,
+				min: 5,
 				max: 10,
 			},
 			acquireConnectionTimeout: 5000,
