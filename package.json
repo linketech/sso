@@ -7,7 +7,7 @@
     "declarations": true
   },
   "dependencies": {
-    "@z-ivan/koa-logger": "^0.0.4",
+    "@z-ivan/koa-logger": "^0.0.5",
     "egg": "^2.29.1",
     "egg-redis": "^2.4.0",
     "egg-router-plus": "^1.3.1",
