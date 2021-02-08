@@ -1,13 +1,16 @@
 const { Controller } = require('egg')
 
-module.exports = class UserController extends Controller {
+module.exports = class PermissionController extends Controller {
 	async index() {
 		const { ctx } = this
 		const { response } = ctx
 
-		const roles = await ctx.service.permission.list()
+		const permissions = await ctx.service.permission.list()
 
 		response.status = 200
-		response.body = roles
+		response.body = permissions.map((permission) => ({
+			...permission,
+			id: permission.id.toString('hex'),
+		}))
 	}
 }

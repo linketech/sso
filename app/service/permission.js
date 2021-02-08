@@ -1,11 +1,13 @@
 const { Service } = require('egg')
 
+const uuid = require('../util/uuid')
+
 module.exports = class PermissionService extends Service {
 	async list(idList) {
 		const { knex } = this.app
 		const roles = await knex
 			.select()
-			.column(knex.raw('hex(id) as id'))
+			.column('id')
 			.column('path')
 			.column('method')
 			.from('permission')
@@ -17,5 +19,55 @@ module.exports = class PermissionService extends Service {
 			})
 
 		return roles
+	}
+
+	async hasPermission(role_id, { path, method }) {
+		const { knex } = this.app
+
+		await knex
+			.select()
+			.column({ permission_id: 'permission.id' })
+			.from('role_has_permission')
+			.leftJoin('permission', 'role_has_permission.permission_id', 'permission.id')
+			.where({
+				'permission.path': path,
+				'permission.method': method,
+			})
+			.where({
+				'role_has_permission.role_id': role_id,
+			})
+			.first()
+	}
+
+	async refresh(addList, subList) {
+		const { knex } = this.app
+
+		await knex.transaction(async (trx) => {
+			const promiseList = []
+
+			if (addList && addList.length > 0) {
+				const now = Date.now()
+				promiseList.push(trx
+					.insert(addList.map((permission) => ({
+						id: uuid.v4(),
+						path: permission.path,
+						regexp: permission.regexp,
+						method: permission.method,
+						create_time: now,
+					})))
+					.into('permission'))
+			}
+
+			if (subList && subList.length > 0) {
+				subList.forEach((permission) => {
+					promiseList.push(trx('role_has_permission').where({ permission_id: permission.id }).del())
+					promiseList.push(trx('permission').where({ id: permission.id }).del())
+				})
+			}
+
+			if (promiseList && promiseList.length > 0) {
+				await Promise.all(promiseList)
+			}
+		})
 	}
 }

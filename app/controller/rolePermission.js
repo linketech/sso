@@ -77,8 +77,8 @@ module.exports = class RolePermissionController extends Controller {
 
 		const permissions = await ctx.service.permission.list(bufferIdList)
 
-		const notExistPermissions = idList
-			.filter((id) => !permissions.find((permission) => permission.id.toUpperCase() === id.toUpperCase()))
+		const notExistPermissions = bufferIdList
+			.filter((id) => !permissions.find((permission) => permission.id.equals(id)))
 		if (notExistPermissions && notExistPermissions.length > 0) {
 			ctx.response.body = { message: '权限组ID不存在', values: notExistPermissions }
 			ctx.response.status = 400

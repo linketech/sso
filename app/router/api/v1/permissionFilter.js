@@ -8,39 +8,16 @@ module.exports = async function permissionFilter(ctx, next) {
 	const { method } = ctx.request
 	const userId = Buffer.from(ctx.session.user.id, 'hex')
 
-	const { knex } = ctx.app
+	const role = await ctx.service.role.getByUserId(userId)
 
-	const user = await knex
-		.select()
-		.column({ role_id: 'role.id' })
-		.column({ role_name: 'role.name' })
-		.from('user')
-		.leftJoin('role', 'user.role_id', 'role.id')
-		.where({
-			'user.id': userId,
-		})
-		.first()
-
-	if (user && user.role_name === 'admin') {
+	if (role && role.name === 'admin') {
 		await next()
 		return
 	}
 
-	const permission = await knex
-		.select()
-		.column({ permission_id: 'permission.id' })
-		.from('role_has_permission')
-		.leftJoin('permission', 'role_has_permission.permission_id', 'permission.id')
-		.where({
-			'permission.path': path,
-			'permission.method': method,
-		})
-		.where({
-			'role_has_permission.role_id': user.role_id,
-		})
-		.first()
+	const hasPermission = await ctx.service.permission.hasPermission(role.id, { path, method })
 
-	if (permission) {
+	if (hasPermission) {
 		await next()
 		return
 	}
