@@ -21,10 +21,10 @@ module.exports = class SessionController extends Controller {
 
 		const { username } = params
 
-		const frontendSalt = await ctx.service.user.getfrontendSaltByUsername(username)
+		const frontend_salt = await ctx.service.user.getfrontendSaltByUsername(username)
 
 		response.status = 200
-		response.body = { frontendSalt }
+		response.body = { frontend_salt }
 	}
 
 	async create() {
