@@ -25,6 +25,10 @@ module.exports = (appInfo) => ({
 			enable: false,
 		},
 	},
+	cors: {
+		origin: '*',
+		credentials: true,
+	},
 	cluster: {
 		listen: {
 			port: env.PORT || 80,
