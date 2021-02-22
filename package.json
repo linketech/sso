@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@z-ivan/koa-logger": "^0.0.5",
-    "egg": "^2.29.1",
+    "egg": "^2.29.3",
     "egg-cors": "^2.2.3",
     "egg-redis": "^2.4.0",
     "egg-router-plus": "^1.3.1",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "egg-bin": "^4.15.0",
-    "eslint": "^7.19.0",
+    "eslint": "^7.20.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1"
   },

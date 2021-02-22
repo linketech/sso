@@ -14,12 +14,6 @@ module.exports = (appInfo) => ({
 	middleware: [
 		'logger',
 	],
-	userConfig: {
-		// myAppName: 'egg',
-	},
-	i18n: {
-		defaultLocale: 'zh-CN',
-	},
 	security: {
 		csrf: {
 			enable: false,
