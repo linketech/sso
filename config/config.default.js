@@ -12,17 +12,9 @@ const { env } = process
 module.exports = (appInfo) => ({
 	keys: `${appInfo.name}_1608715601779_9499`,
 	middleware: [
+		'cors',
 		'logger',
 	],
-	security: {
-		csrf: {
-			enable: false,
-		},
-	},
-	cors: {
-		origin: '*',
-		credentials: true,
-	},
 	cluster: {
 		listen: {
 			port: env.PORT || 80,
