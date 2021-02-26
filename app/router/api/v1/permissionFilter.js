@@ -15,11 +15,12 @@ module.exports = async function permissionFilter(ctx, next) {
 		return
 	}
 
-	const hasPermission = await ctx.service.permission.hasPermission(role.id, { path, method })
-
-	if (hasPermission) {
-		await next()
-		return
+	if (role && role.id) {
+		const hasPermission = await ctx.service.permission.hasPermission(role.id, { path, method })
+		if (hasPermission) {
+			await next()
+			return
+		}
 	}
 
 	ctx.response.status = 403
