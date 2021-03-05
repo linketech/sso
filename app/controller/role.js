@@ -37,9 +37,11 @@ module.exports = class UserController extends Controller {
 			return
 		}
 
-		await ctx.service.role.create(name)
+		const { id } = await ctx.service.role.create(name)
 
-		response.status = 200
+		response.body = {
+			id: id.toString('hex').toUpperCase(),
+		}
 	}
 
 	async destroy() {

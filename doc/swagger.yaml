@@ -285,6 +285,14 @@ paths:
       responses:
         '200':
           description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 权限组ID
       security:
         - cookieAuth: []
     delete:
