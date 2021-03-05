@@ -34,7 +34,7 @@ module.exports = (appInfo) => ({
 				min: 5,
 				max: 10,
 			},
-			acquireConnectionTimeout: 5000,
+			acquireConnectionTimeout: 2000,
 		},
 		app: true,
 		agent: false,

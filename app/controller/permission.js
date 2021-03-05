@@ -10,7 +10,7 @@ module.exports = class PermissionController extends Controller {
 		response.status = 200
 		response.body = permissions.map((permission) => ({
 			...permission,
-			id: permission.id.toString('hex'),
+			id: permission.id.toString('hex').toUpperCase(),
 		}))
 	}
 }
