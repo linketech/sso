@@ -72,8 +72,11 @@ module.exports = class RoleService extends Service {
 	async destroy(id) {
 		const { knex } = this.app
 
-		await knex('role')
-			.where({ id })
-			.del()
+		await knex.transaction(async (trx) => {
+			await trx('user').where({ role_id: id }).update({ role_id: null })
+			await trx('role_has_permission').where({ role_id: id }).del()
+			await trx('role_has_website').where({ role_id: id }).del()
+			await trx('role').where({ id }).del()
+		})
 	}
 }
