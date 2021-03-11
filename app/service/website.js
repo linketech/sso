@@ -7,11 +7,10 @@ module.exports = class WebsiteService extends Service {
 		const { knex } = this.app
 		const websites = await knex
 			.select()
-			.column(knex.raw('hex(id) as id'))
+			.column('id')
 			.column('name')
 			.column('origin_url')
 			.column('login_path')
-			.column('redirect_path')
 			.column('create_time')
 			.from('website')
 			.orderBy('create_time', 'desc')
@@ -69,7 +68,7 @@ module.exports = class WebsiteService extends Service {
 		return websites
 	}
 
-	async create({ name, origin_url, login_path, redirect_path }) {
+	async create({ name, origin_url, login_path }) {
 		const { knex } = this.app
 		const id = uuid.v4()
 		await knex
@@ -78,7 +77,6 @@ module.exports = class WebsiteService extends Service {
 				name,
 				origin_url,
 				login_path,
-				redirect_path,
 				create_time: Date.now(),
 			})
 			.into('website')

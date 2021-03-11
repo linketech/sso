@@ -103,7 +103,7 @@ module.exports = class RoleWebstieController extends Controller {
 				type: 'string',
 				format: /^[0-9A-Fa-f]{32}$/,
 			},
-		}, request.body)
+		}, request.query)
 
 		if (errors) {
 			response.body = { message: '无效请求参数', errors }
@@ -111,8 +111,8 @@ module.exports = class RoleWebstieController extends Controller {
 			return
 		}
 
-		const role_id = Buffer.from(request.body.role_id, 'hex')
-		const website_id = Buffer.from(request.body.website_id, 'hex')
+		const role_id = Buffer.from(request.query.role_id, 'hex')
+		const website_id = Buffer.from(request.query.website_id, 'hex')
 
 		const role = await ctx.service.role.getById(role_id)
 		if (!role) {

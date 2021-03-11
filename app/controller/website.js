@@ -7,7 +7,10 @@ module.exports = class WebstieController extends Controller {
 
 		const websites = await ctx.service.website.list()
 
-		response.body = websites
+		response.body = websites.map(({ id, ...rest }) => ({
+			id: id.toString('hex'),
+			...rest,
+		}))
 	}
 
 	async create() {
@@ -29,12 +32,6 @@ module.exports = class WebstieController extends Controller {
 				format: /^(\/\S*)?$/,
 				required: false,
 			},
-			redirect_path: {
-				type: 'string',
-				max: 45,
-				format: /^(\/\S*)?$/,
-				required: false,
-			},
 		}, request.body)
 
 		if (errors) {
@@ -43,7 +40,7 @@ module.exports = class WebstieController extends Controller {
 			return
 		}
 
-		const { name, origin_url, login_path, redirect_path } = request.body
+		const { name, origin_url, login_path } = request.body
 
 		const website = await ctx.service.website.getByName(name)
 		if (website) {
@@ -52,14 +49,13 @@ module.exports = class WebstieController extends Controller {
 			return
 		}
 
-		await ctx.service.website.create({
+		const { id } = await ctx.service.website.create({
 			name,
 			origin_url,
 			login_path,
-			redirect_path,
 		})
 
-		response.status = 200
+		response.body = { id: id.toString('hex') }
 	}
 
 	async destroy() {
@@ -102,6 +98,15 @@ module.exports = class WebstieController extends Controller {
 				type: 'string',
 				format: /^[0-9A-Fa-f]{32}$/,
 			},
+		}, request.query)
+
+		if (errors) {
+			response.body = { message: '无效请求参数', errors }
+			response.status = 400
+			return
+		}
+
+		const bodyErrors = app.validator.validate({
 			name: {
 				type: 'string',
 				max: 45,
@@ -116,22 +121,16 @@ module.exports = class WebstieController extends Controller {
 				format: /^(\/\S*)?$/,
 				required: false,
 			},
-			redirect_path: {
-				type: 'string',
-				max: 45,
-				format: /^(\/\S*)?$/,
-				required: false,
-			},
 		}, request.body)
 
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
+		if (bodyErrors) {
+			response.body = { message: '无效请求参数', errors: bodyErrors }
 			response.status = 400
 			return
 		}
 
-		const id = Buffer.from(request.body.id, 'hex')
-		const { name, origin_url, login_path, redirect_path } = request.body
+		const id = Buffer.from(request.query.id, 'hex')
+		const { name, origin_url, login_path } = request.body
 
 		const website = await ctx.service.website.getById(id)
 		if (!website) {
@@ -151,7 +150,6 @@ module.exports = class WebstieController extends Controller {
 			name,
 			origin_url,
 			login_path,
-			redirect_path,
 		})
 
 		response.status = 200

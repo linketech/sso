@@ -111,15 +111,17 @@ paths:
                         type: string
                         description: 用户名
                   permission:
-                    type: object
-                    description: 权限
-                    properties:
-                      path:
-                        type: string 
-                        description: 请求path
-                      method:
-                        type: string 
-                        description: 请求method
+                    type: array
+                    items:
+                      type: object
+                      description: 权限
+                      properties:
+                        path:
+                          type: string 
+                          description: 请求path
+                        method:
+                          type: string 
+                          description: 请求method
       security:
         - cookieAuth: []
   /session/user:  
@@ -338,17 +340,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    description: 权限ID
-                  path:
-                    type: string
-                    description: 权限的HTTP请求路径
-                  method:
-                    type: string
-                    description: 权限的HTTP请求方法
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 权限ID
+                    path:
+                      type: string
+                      description: 权限的HTTP请求路径
+                    method:
+                      type: string
+                      description: 权限的HTTP请求方法
       security:
         - cookieAuth: []
   /role/permission:
@@ -443,6 +447,167 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
+  /website:
+    get:
+      tags:
+        - 网站
+      summary: 查看所有网站
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站ID
+                    name:
+                      type: string
+                      description: 网站名
+                    origin_url:
+                      type: string
+                      description: 网站根地址
+                    login_path:
+                      type: string
+                      description: 登录地址
+                    create_time:
+                      type: integer
+                      description: 创建时间
+      security:
+        - cookieAuth: []
+    post:
+      tags:
+        - 网站
+      summary: 创建权限组
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 网站名
+                origin_url:
+                  type: string
+                  description: 网站根地址
+                login_path:
+                  type: string
+                  description: 登录地址
+      responses:
+        '200':
+          description: 请求成功
+    put:
+      tags:
+        - 网站
+      summary: 修改网站
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 网站ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 网站名
+                origin_url:
+                  type: string
+                  description: 网站根地址
+                login_path:
+                  type: string
+                  description: 登录地址
+      responses:
+        '200':
+          description: 请求成功
+    delete:
+      tags:
+        - 网站
+      summary: 删除网站
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 网站ID
+      responses:
+        '200':
+          description: 请求成功
+  /role/website:
+    get:
+      tags:
+        - 权限组与网站的关系
+      summary: 查看权限组与网站的关系
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    role_id:
+                      type: string
+                      description: 权限组ID
+                    role_name:
+                      type: string
+                      description: 权限组名
+                    website_id:
+                      type: string
+                      description: 网站ID
+                    website_name:
+                      type: string
+                      description: 网站名
+      security:
+        - cookieAuth: []
+    post:
+      tags:
+        - 权限组与网站的关系
+      summary: 创建权限组与网站的关系
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_id:
+                  type: string
+                  description: 权限组ID
+                website_id:
+                  type: string
+                  description: 网站ID
+      responses:
+        '200':
+          description: 请求成功
+    delete:
+      tags:
+        - 权限组与网站的关系
+      summary: 删除权限组与网站的关系
+      parameters:
+        - name: role_id
+          in: query
+          schema:
+            type: string
+            description: 权限组ID
+        - name: website_id
+          in: query
+          schema:
+            type: string
+            description: 网站ID
+      responses:
+        '200':
+          description: 请求成功
 components:
   securitySchemes:
     cookieAuth:
