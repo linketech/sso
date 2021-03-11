@@ -24,7 +24,7 @@ module.exports = class PermissionService extends Service {
 	async hasPermission(role_id, { path, method }) {
 		const { knex } = this.app
 
-		await knex
+		const permission = await knex
 			.select()
 			.column({ permission_id: 'permission.id' })
 			.from('role_has_permission')
@@ -37,6 +37,8 @@ module.exports = class PermissionService extends Service {
 				'role_has_permission.role_id': role_id,
 			})
 			.first()
+
+		return !!permission
 	}
 
 	async refresh(addList, subList) {
