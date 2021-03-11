@@ -70,4 +70,19 @@ module.exports = class PermissionService extends Service {
 			}
 		})
 	}
+
+	async getByRoleId(role_id) {
+		const { knex } = this.app
+		const permissions = await knex
+			.select()
+			.column('permission.id')
+			.column('permission.path')
+			.column('permission.method')
+			.from('role_has_permission')
+			.join('permission', 'role_has_permission.permission_id', 'permission.id')
+			.where({
+				'role_has_permission.role_id': role_id,
+			})
+		return permissions
+	}
 }

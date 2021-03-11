@@ -90,9 +90,9 @@ module.exports = class RolePermissionController extends Controller {
 			await ctx.service.rolePermission.update(role.id, bufferIdList)
 			response.status = 200
 		} else if (path === '/api/role/permission/add') {
-			const hasPermissions = await ctx.service.rolePermission.list({ role_id })
+			const hasPermissions = await ctx.service.permission.getByRoleId(role_id)
 			const alreadyHasPermissions = idList
-				.filter((id) => hasPermissions.find((permission) => permission.id.toUpperCase() === id.toUpperCase()))
+				.filter((id) => !!hasPermissions.find((permission) => permission.id.toString('hex').toUpperCase() === id.toUpperCase()))
 			if (alreadyHasPermissions && alreadyHasPermissions.length > 0) {
 				ctx.response.body = { message: '权限组存在该权限', values: alreadyHasPermissions }
 				ctx.response.status = 400
@@ -101,9 +101,9 @@ module.exports = class RolePermissionController extends Controller {
 			await ctx.service.rolePermission.create(role_id, bufferIdList)
 			response.status = 200
 		} else if (path === '/api/role/permission/subtract') {
-			const hasPermissions = await ctx.service.rolePermission.list({ role_id })
+			const hasPermissions = await ctx.service.permission.getByRoleId(role_id)
 			const notHasPermissions = idList
-				.filter((id) => !hasPermissions.find((permission) => permission.id.toUpperCase() === id.toUpperCase()))
+				.filter((id) => !hasPermissions.find((permission) => permission.id.toString('hex').toUpperCase() === id.toUpperCase()))
 			if (notHasPermissions && notHasPermissions.length > 0) {
 				ctx.response.body = { message: '权限组不存在该权限', values: notHasPermissions }
 				ctx.response.status = 400

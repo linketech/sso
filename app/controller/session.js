@@ -90,12 +90,28 @@ module.exports = class SessionController extends Controller {
 		const { ctx } = this
 		const { response } = ctx
 
-		response.status = 200
-		response.body = {
+		const { user } = ctx.session
+
+		const info = {
 			user: {
-				name: ctx.session.user.name,
+				name: user.name,
 			},
 		}
+
+		const role = await ctx.service.role.getByUserId(Buffer.from(user.id, 'hex'))
+		if (role) {
+			info.role = {
+				name: role.name,
+			}
+			const permissions = await ctx.service.permission.getByRoleId(Buffer.from(role.id, 'hex'))
+			if (permissions && permissions.length > 0) {
+				info.permissions = permissions.map(({ id, ...rest }) => ({
+					...rest,
+				}))
+			}
+		}
+
+		response.body = info
 	}
 
 	async destroy() {
@@ -163,5 +179,14 @@ module.exports = class SessionController extends Controller {
 		await ctx.service.user.create(username, password, frontendSalt)
 
 		response.status = 200
+	}
+
+	async permission() {
+		const { ctx } = this
+		console.log()
+
+		const user_id = Buffer.from(ctx.session.user.id, 'hex')
+
+		ctx.response.body = await ctx.service.permission.getByUserId(user_id)
 	}
 }

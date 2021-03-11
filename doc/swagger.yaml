@@ -103,6 +103,23 @@ paths:
                       name:
                         type: string
                         description: 用户名
+                  role:
+                    type: object
+                    description: 角色信息
+                    properties:
+                      name:
+                        type: string
+                        description: 用户名
+                  permission:
+                    type: object
+                    description: 权限
+                    properties:
+                      path:
+                        type: string 
+                        description: 请求path
+                      method:
+                        type: string 
+                        description: 请求method
       security:
         - cookieAuth: []
   /session/user:  
