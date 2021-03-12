@@ -45,30 +45,42 @@ module.exports = class PermissionService extends Service {
 		const { knex } = this.app
 
 		await knex.transaction(async (trx) => {
-			const promiseList = []
-
 			if (addList && addList.length > 0) {
+				addList.forEach((permission) => {
+					Object.assign(permission, { id: uuid.v4() })
+				})
+
 				const now = Date.now()
-				promiseList.push(trx
-					.insert(addList.map((permission) => ({
-						id: uuid.v4(),
-						path: permission.path,
-						regexp: permission.regexp,
-						method: permission.method,
+				await trx
+					.insert(addList.map(({ id, path, regexp, method }) => ({
+						id,
+						path,
+						regexp,
+						method,
 						create_time: now,
 					})))
-					.into('permission'))
+					.into('permission')
+
+				// 给Admin权限组赋全权限
+				const role = await trx
+					.select()
+					.column('id')
+					.from('role')
+					.where({ name: 'admin' })
+					.first()
+				await trx
+					.insert(addList.map(({ id }) => ({
+						role_id: role.id,
+						permission_id: id,
+					})))
+					.into('role_has_permission')
 			}
 
 			if (subList && subList.length > 0) {
-				subList.forEach((permission) => {
-					promiseList.push(trx('role_has_permission').where({ permission_id: permission.id }).del())
-					promiseList.push(trx('permission').where({ id: permission.id }).del())
+				subList.forEach(async ({ id }) => {
+					await trx('role_has_permission').where({ permission_id: id }).del()
+					await trx('permission').where({ id }).del()
 				})
-			}
-
-			if (promiseList && promiseList.length > 0) {
-				await Promise.all(promiseList)
 			}
 		})
 	}

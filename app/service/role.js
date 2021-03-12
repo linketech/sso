@@ -6,14 +6,14 @@ module.exports = class RoleService extends Service {
 	async getByName(name) {
 		const { knex } = this.app
 
-		const root = await knex
+		const role = await knex
 			.select()
 			.column('id')
 			.from('role')
 			.where({ name })
 			.first()
 
-		return root
+		return role
 	}
 
 	async getById(id) {
