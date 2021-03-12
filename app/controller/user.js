@@ -11,7 +11,7 @@ module.exports = class UserController extends Controller {
 			id: id.toString('hex'),
 			name,
 			disabled,
-			role_id: role_id.toString('hex'),
+			role_id: role_id && role_id.toString('hex'),
 			role_name,
 		}))
 	}
