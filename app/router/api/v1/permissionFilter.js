@@ -10,11 +10,6 @@ module.exports = async function permissionFilter(ctx, next) {
 
 	const role = await ctx.service.role.getByUserId(userId)
 
-	if (role && role.name === 'admin') {
-		await next()
-		return
-	}
-
 	if (role && role.id) {
 		const hasPermission = await ctx.service.permission.hasPermission(role.id, { path, method })
 		if (hasPermission) {

@@ -183,11 +183,11 @@ module.exports = class UserService extends Service {
 		const { knex } = this.app
 		const roles = await knex
 			.select()
-			.column(knex.raw('hex(user.id) as id'))
+			.column('user.id as id')
 			.column('user.name')
-			.column(knex.raw('hex(role.id) as role_id'))
-			.column('role.name as role_name')
 			.column('user.disabled')
+			.column('role.id as role_id')
+			.column('role.name as role_name')
 			.from('user')
 			.leftJoin('role', 'user.role_id', 'role.id')
 		return roles

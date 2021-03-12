@@ -7,8 +7,10 @@ module.exports = class UserController extends Controller {
 
 		const roles = await ctx.service.role.list()
 
-		response.status = 200
-		response.body = roles
+		response.body = roles.map(({ id, name }) => ({
+			id: id.toString('hex'),
+			name,
+		}))
 	}
 
 	async create() {
@@ -66,12 +68,6 @@ module.exports = class UserController extends Controller {
 		const role = await ctx.service.role.getById(id)
 		if (!role) {
 			ctx.response.body = { message: '权限组不存在' }
-			ctx.response.status = 400
-			return
-		}
-
-		if (role.name === 'admin') {
-			ctx.response.body = { message: '不能删除Admin权限组' }
 			ctx.response.status = 400
 			return
 		}

@@ -69,11 +69,6 @@ module.exports = class RolePermissionController extends Controller {
 			ctx.response.status = 400
 			return
 		}
-		if (role.name === 'admin') {
-			ctx.response.body = { message: '不能对Admin权限组进行操作' }
-			ctx.response.status = 400
-			return
-		}
 
 		const permissions = await ctx.service.permission.list(bufferIdList)
 

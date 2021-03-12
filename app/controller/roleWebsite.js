@@ -65,11 +65,6 @@ module.exports = class RoleWebstieController extends Controller {
 			ctx.response.status = 400
 			return
 		}
-		if (role.name === 'admin') {
-			ctx.response.body = { message: '不能操作Admin权限组' }
-			ctx.response.status = 400
-			return
-		}
 
 		const website = await ctx.service.website.getById(website_id)
 		if (!website) {
@@ -117,11 +112,6 @@ module.exports = class RoleWebstieController extends Controller {
 		const role = await ctx.service.role.getById(role_id)
 		if (!role) {
 			ctx.response.body = { message: '权限组不存在' }
-			ctx.response.status = 400
-			return
-		}
-		if (role.name === 'admin') {
-			ctx.response.body = { message: '不能操作Admin权限组' }
 			ctx.response.status = 400
 			return
 		}

@@ -7,7 +7,13 @@ module.exports = class UserController extends Controller {
 
 		const users = await ctx.service.user.list()
 
-		response.body = users
+		response.body = users.map(({ id, name, disabled, role_id, role_name }) => ({
+			id: id.toString('hex'),
+			name,
+			disabled,
+			role_id: role_id.toString('hex'),
+			role_name,
+		}))
 	}
 
 	async update() {
@@ -91,11 +97,6 @@ module.exports = class UserController extends Controller {
 		const user = await ctx.service.user.getById(id)
 		if (!user) {
 			ctx.response.body = { message: '用户不存在' }
-			ctx.response.status = 400
-			return
-		}
-		if (user.name === 'admin') {
-			ctx.response.body = { message: '不能删除Admin用户' }
 			ctx.response.status = 400
 			return
 		}

@@ -62,7 +62,7 @@ module.exports = class RoleService extends Service {
 		const { knex } = this.app
 		const roles = await knex
 			.select()
-			.column(knex.raw('hex(id) as id'))
+			.column('id')
 			.column('name')
 			.from('role')
 
