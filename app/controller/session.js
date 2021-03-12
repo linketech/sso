@@ -184,13 +184,4 @@ module.exports = class SessionController extends Controller {
 
 		response.status = 200
 	}
-
-	async permission() {
-		const { ctx } = this
-		console.log()
-
-		const user_id = Buffer.from(ctx.session.user.id, 'hex')
-
-		ctx.response.body = await ctx.service.permission.getByUserId(user_id)
-	}
 }
