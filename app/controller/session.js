@@ -103,11 +103,15 @@ module.exports = class SessionController extends Controller {
 			info.role = {
 				name: role.name,
 			}
-			const permissions = await ctx.service.permission.getByRoleId(Buffer.from(role.id, 'hex'))
+			const permissions = await ctx.service.permission.getByRoleId(role.id)
 			if (permissions && permissions.length > 0) {
 				info.permissions = permissions.map(({ id, ...rest }) => ({
 					...rest,
 				}))
+			}
+			const websites = await ctx.service.website.getByRoleId(role.id)
+			if (websites && websites.length > 0) {
+				info.websites = websites
 			}
 		}
 

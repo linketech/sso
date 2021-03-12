@@ -61,7 +61,7 @@ module.exports = class PermissionService extends Service {
 					})))
 					.into('permission')
 
-				// 给Admin权限组赋全权限
+				// 添加的新权限分配给Admin权限组
 				const role = await trx
 					.select()
 					.column('id')

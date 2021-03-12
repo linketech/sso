@@ -57,29 +57,36 @@ module.exports = class WebsiteService extends Service {
 		return websites
 	}
 
-	async getByAdmin() {
-		const { knex } = this.app
-
-		const websites = await knex
-			.select()
-			.column('name')
-			.from('website')
-
-		return websites
-	}
-
 	async create({ name, origin_url, login_path }) {
 		const { knex } = this.app
 		const id = uuid.v4()
-		await knex
-			.insert({
-				id,
-				name,
-				origin_url,
-				login_path,
-				create_time: Date.now(),
-			})
-			.into('website')
+
+		await knex.transaction(async (trx) => {
+			await knex
+				.insert({
+					id,
+					name,
+					origin_url,
+					login_path,
+					create_time: Date.now(),
+				})
+				.into('website')
+
+			// 添加的新网站分配给Admin权限组
+			const role = await trx
+				.select()
+				.column('id')
+				.from('role')
+				.where({ name: 'admin' })
+				.first()
+
+			await trx
+				.insert({
+					role_id: role.id,
+					website_id: id,
+				})
+				.into('role_has_website')
+		})
 		return { id }
 	}
 
