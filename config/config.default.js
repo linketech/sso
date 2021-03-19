@@ -65,4 +65,8 @@ module.exports = (appInfo) => ({
 		level: 'NONE',
 		disableConsoleAfterReady: false,
 	},
+	sso: {
+		address: 'https://cloud-production-alpha.leaf.linketech.cn',
+		authPath: '/user/auth',
+	},
 })

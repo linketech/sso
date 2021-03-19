@@ -12,25 +12,45 @@ module.exports = class JwtController extends Controller {
 		})
 	}
 
-	async get() {
-		const { ctx } = this
-		const { response } = ctx
-
+	async getToken(ctx) {
 		const user_id = Buffer.from(ctx.session.user.id, 'hex')
 		const role = await ctx.service.role.getByUserId(user_id)
 
 		const websites = await ctx.service.website.getByRoleId(role.id)
 
+		return jwt.sign({
+			user: {
+				name: ctx.session.user.name,
+			},
+			role: {
+				name: role.name,
+			},
+			websites: websites.map(({ name }) => name),
+		}, this.PRIVATE_KEY, { algorithm: 'ES256' })
+	}
+
+	async get() {
+		const { ctx } = this
+		const { response } = ctx
+		const token = await this.getToken(ctx)
+
 		response.body = {
-			token: jwt.sign({
-				user: {
-					name: ctx.session.user.name,
-				},
-				role: {
-					name: role.name,
-				},
-				websites: websites.map(({ name }) => name),
-			}, this.PRIVATE_KEY, { algorithm: 'ES256' }),
+			token,
+		}
+	}
+
+	async auth() {
+		const { ctx } = this
+		const { request, response } = ctx
+
+		const { return_to } = request.query
+
+		if (ctx.session.user) {
+			const token = await this.getToken(ctx)
+			response.redirect(`${return_to}?token=${token}`)
+		} else {
+			const path = this.config.sso.address + this.config.sso.authPath
+			response.redirect(`${path}?return_to=${return_to}`)
 		}
 	}
 

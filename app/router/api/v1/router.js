@@ -15,7 +15,8 @@ module.exports = ({ router, controller }) => {
 	subRouter.delete('/session', loginFilter, controller.session.destroy)
 	subRouter.post('/session/user', controller.session.userCreate)
 
-	subRouter.get('/jwt', loginFilter, permissionFilter, controller.jwt.get)
+	subRouter.get('/jwt', loginFilter, controller.jwt.get)
+	subRouter.get('/jwt/auth', controller.jwt.auth)
 	subRouter.get('/jwt/verify/:token', controller.jwt.verify)
 
 	subRouter.get('/user', loginFilter, permissionFilter, controller.user.index)

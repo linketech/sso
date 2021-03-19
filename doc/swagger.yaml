@@ -177,6 +177,28 @@ paths:
                     description: token
       security:
         - cookieAuth: []
+  /jwt/auth:
+    get:
+      tags:
+        - JWT
+      summary: 获取JWT
+      parameters:
+        - name: return_to
+          in: query
+          schema:
+            type: string
+            description: 重定向至哪个网站
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: token
   /jwt/verify/{token}:
     get:
       tags:
