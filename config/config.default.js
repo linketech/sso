@@ -30,14 +30,7 @@ module.exports = (appInfo) => ({
 				password: env.MYSQL_PASSWORD || 'root',
 				database: 'sso',
 			},
-			pool: {
-				min: 5,
-				max: 10,
-			},
-			acquireConnectionTimeout: 2000,
 		},
-		app: true,
-		agent: false,
 	},
 	redis: {
 		clients: {

@@ -62,7 +62,7 @@ module.exports = class WebsiteService extends Service {
 		const id = uuid.v4()
 
 		await knex.transaction(async (trx) => {
-			await knex
+			await trx
 				.insert({
 					id,
 					name,
@@ -72,30 +72,43 @@ module.exports = class WebsiteService extends Service {
 				})
 				.into('website')
 
-			// 添加的新网站分配给Admin权限组
-			const role = await trx
+			const role = await trx('role')
 				.select()
 				.column('id')
-				.from('role')
 				.where({ name: 'admin' })
 				.first()
 
-			await trx
+			await trx('role_has_website')
 				.insert({
 					role_id: role.id,
 					website_id: id,
 				})
-				.into('role_has_website')
 		})
+
 		return { id }
 	}
 
 	async destroy(id) {
 		const { knex } = this.app
 
-		await knex('website')
-			.where({ id })
-			.del()
+		await knex.transaction(async (trx) => {
+			const role = await trx('role')
+				.select()
+				.column('id')
+				.where({ name: 'admin' })
+				.first()
+
+			await trx('role_has_website')
+				.where({
+					role_id: role.id,
+					website_id: id,
+				})
+				.del()
+
+			await trx('website')
+				.where({ id })
+				.del()
+		})
 	}
 
 	async update(id, { name, origin_url, login_path, redirect_path }) {
