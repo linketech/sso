@@ -14,10 +14,10 @@ module.exports = class RoleWebsiteService extends Service {
 			.leftJoin('website', 'role_has_website.website_id', 'website.id')
 			.where((builder) => {
 				if (role_id !== undefined) {
-					builder.where('role_has_permission.role_id', role_id)
+					builder.where('role_has_website.role_id', role_id)
 				}
 				if (website_id !== undefined) {
-					builder.where('role_has_permission.website_id', website_id)
+					builder.where('role_has_website.website_id', website_id)
 				}
 				return builder
 			})
@@ -40,23 +40,17 @@ module.exports = class RoleWebsiteService extends Service {
 		return website
 	}
 
-	async create({ role_id, website_id }) {
+	async update(roleId, websiteIdList) {
 		const { knex } = this.app
-		await knex
-			.insert({
-				role_id,
-				website_id,
-			})
-			.into('role_has_website')
-	}
 
-	async destroy({ role_id, website_id }) {
-		const { knex } = this.app
-		await knex('role_has_website')
-			.where({
-				role_id,
-				website_id,
-			})
-			.del()
+		await knex.transaction(async (trx) => {
+			await trx('role_has_website').where({ role_id: roleId }).del()
+			if (websiteIdList && websiteIdList.length > 0) {
+				await trx('role_has_website').insert(websiteIdList.map((websiteId) => ({
+					role_id: roleId,
+					website_id: websiteId,
+				})))
+			}
+		})
 	}
 }

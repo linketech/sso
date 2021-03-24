@@ -423,52 +423,6 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
-  /role/permission/add:
-    put:
-      tags:
-        - 权限组与权限的关系
-      summary: 更新权限组与权限
-      description: 只增加权限
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                role_id:
-                  type: string
-                  description: 权限组ID
-                permission_id_list:
-                  type: string
-                  description: 权限ID集合
-      responses:
-        '200':
-          description: 请求成功
-      security:
-        - cookieAuth: []
-  /role/permission/subtract:
-    put:
-      tags:
-        - 权限组与权限的关系
-      summary: 更新权限组与权限
-      description: 只增加权限
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                role_id:
-                  type: string
-                  description: 权限组ID
-                permission_id_list:
-                  type: string
-                  description: 权限ID集合
-      responses:
-        '200':
-          description: 请求成功
-      security:
-        - cookieAuth: []
   /website:
     get:
       tags:
@@ -593,10 +547,11 @@ paths:
                       description: 网站名
       security:
         - cookieAuth: []
-    post:
+    put:
       tags:
         - 权限组与网站的关系
-      summary: 创建权限组与网站的关系
+      summary: 更新权限组与网站
+      description: 清除之前的关系，以上传的为最终结果
       requestBody:
         content:
           application/json:
@@ -606,30 +561,14 @@ paths:
                 role_id:
                   type: string
                   description: 权限组ID
-                website_id:
+                website_id_list:
                   type: string
-                  description: 网站ID
+                  description: 网站ID集合
       responses:
         '200':
           description: 请求成功
-    delete:
-      tags:
-        - 权限组与网站的关系
-      summary: 删除权限组与网站的关系
-      parameters:
-        - name: role_id
-          in: query
-          schema:
-            type: string
-            description: 权限组ID
-        - name: website_id
-          in: query
-          schema:
-            type: string
-            description: 网站ID
-      responses:
-        '200':
-          description: 请求成功
+      security:
+        - cookieAuth: []
 components:
   securitySchemes:
     cookieAuth:

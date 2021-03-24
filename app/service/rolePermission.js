@@ -49,12 +49,14 @@ module.exports = class RolePermissionService extends Service {
 	async update(roleId, permissionIdList) {
 		const { knex } = this.app
 
-		await knex.transaction((trx) => Promise.all([
-			trx('role_has_permission').where({ role_id: roleId }).del(),
-			trx('role_has_permission').insert(permissionIdList.map((permissionId) => ({
-				role_id: roleId,
-				permission_id: permissionId,
-			}))),
-		]))
+		await knex.transaction(async (trx) => {
+			await trx('role_has_permission').where({ role_id: roleId }).del()
+			if (permissionIdList && permissionIdList.length > 0) {
+				await trx('role_has_permission').insert(permissionIdList.map((websiteId) => ({
+					role_id: roleId,
+					website_id: websiteId,
+				})))
+			}
+		})
 	}
 }

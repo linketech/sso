@@ -3,7 +3,7 @@ const { Service } = require('egg')
 const uuid = require('../util/uuid')
 
 module.exports = class WebsiteService extends Service {
-	async list() {
+	async list(idList) {
 		const { knex } = this.app
 		const websites = await knex
 			.select()
@@ -13,6 +13,12 @@ module.exports = class WebsiteService extends Service {
 			.column('login_path')
 			.column('create_time')
 			.from('website')
+			.where((builder) => {
+				if (idList && idList.length > 0) {
+					builder.whereIn('id', idList)
+				}
+				return builder
+			})
 			.orderBy('create_time', 'desc')
 		return websites
 	}

@@ -30,8 +30,6 @@ module.exports = ({ router, controller }) => {
 	subRouter.get('/permission', loginFilter, permissionFilter, controller.permission.index)
 
 	subRouter.get('/role/permission', loginFilter, permissionFilter, controller.rolePermission.index)
-	subRouter.put('/role/permission/add', loginFilter, permissionFilter, controller.rolePermission.update)
-	subRouter.put('/role/permission/subtract', loginFilter, permissionFilter, controller.rolePermission.update)
 	subRouter.put('/role/permission', loginFilter, permissionFilter, controller.rolePermission.update)
 
 	subRouter.get('/website', loginFilter, permissionFilter, controller.website.index)
@@ -40,6 +38,5 @@ module.exports = ({ router, controller }) => {
 	subRouter.put('/website', loginFilter, permissionFilter, controller.website.update)
 
 	subRouter.get('/role/website', loginFilter, permissionFilter, controller.roleWebsite.index)
-	subRouter.post('/role/website', loginFilter, permissionFilter, controller.roleWebsite.create)
-	subRouter.delete('/role/website', loginFilter, permissionFilter, controller.roleWebsite.destroy)
+	subRouter.put('/role/website', loginFilter, permissionFilter, controller.roleWebsite.update)
 }

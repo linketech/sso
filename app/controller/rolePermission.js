@@ -49,7 +49,6 @@ module.exports = class RolePermissionController extends Controller {
 				rule: {
 					format: /^[0-9A-Fa-f]{32}$/,
 				},
-				min: 1,
 			},
 		}, request.body)
 
@@ -60,8 +59,7 @@ module.exports = class RolePermissionController extends Controller {
 		}
 
 		const role_id = Buffer.from(request.body.role_id, 'hex')
-		const idList = request.body.permission_id_list
-		const bufferIdList = idList.map((id) => Buffer.from(id, 'hex'))
+		const permission_id_list = request.body.permission_id_list.map((id) => Buffer.from(id, 'hex'))
 
 		const role = await ctx.service.role.getById(role_id)
 		if (!role) {
@@ -70,42 +68,16 @@ module.exports = class RolePermissionController extends Controller {
 			return
 		}
 
-		const permissions = await ctx.service.permission.list(bufferIdList)
-
-		const notExistPermissions = bufferIdList
+		const permissions = await ctx.service.permission.list(permission_id_list)
+		const notExistPermissions = permission_id_list
 			.filter((id) => !permissions.find((permission) => permission.id.equals(id)))
 		if (notExistPermissions && notExistPermissions.length > 0) {
-			ctx.response.body = { message: '权限组ID不存在', values: notExistPermissions }
+			ctx.response.body = { message: '权限ID不存在', values: notExistPermissions }
 			ctx.response.status = 400
 			return
 		}
 
-		const { path } = this.ctx.request
-		if (path === '/api/role/permission') {
-			await ctx.service.rolePermission.update(role.id, bufferIdList)
-			response.status = 200
-		} else if (path === '/api/role/permission/add') {
-			const hasPermissions = await ctx.service.permission.getByRoleId(role_id)
-			const alreadyHasPermissions = idList
-				.filter((id) => !!hasPermissions.find((permission) => permission.id.toString('hex').toUpperCase() === id.toUpperCase()))
-			if (alreadyHasPermissions && alreadyHasPermissions.length > 0) {
-				ctx.response.body = { message: '权限组存在该权限', values: alreadyHasPermissions }
-				ctx.response.status = 400
-				return
-			}
-			await ctx.service.rolePermission.create(role_id, bufferIdList)
-			response.status = 200
-		} else if (path === '/api/role/permission/subtract') {
-			const hasPermissions = await ctx.service.permission.getByRoleId(role_id)
-			const notHasPermissions = idList
-				.filter((id) => !hasPermissions.find((permission) => permission.id.toString('hex').toUpperCase() === id.toUpperCase()))
-			if (notHasPermissions && notHasPermissions.length > 0) {
-				ctx.response.body = { message: '权限组不存在该权限', values: notHasPermissions }
-				ctx.response.status = 400
-				return
-			}
-			await ctx.service.rolePermission.destroy(role.id, bufferIdList)
-			response.status = 200
-		}
+		await ctx.service.rolePermission.update(role.id, permission_id_list)
+		response.status = 200
 	}
 }
