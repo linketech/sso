@@ -22,15 +22,9 @@ module.exports = class WebstieController extends Controller {
 				type: 'string',
 				max: 45,
 			},
-			origin_url: {
+			url: {
 				type: 'url',
 				max: 45,
-			},
-			login_path: {
-				type: 'string',
-				max: 45,
-				format: /^(\/\S*)?$/,
-				required: false,
 			},
 		}, request.body)
 
@@ -40,7 +34,7 @@ module.exports = class WebstieController extends Controller {
 			return
 		}
 
-		const { name, origin_url, login_path } = request.body
+		const { name, url } = request.body
 
 		const website = await ctx.service.website.getByName(name)
 		if (website) {
@@ -51,8 +45,7 @@ module.exports = class WebstieController extends Controller {
 
 		const { id } = await ctx.service.website.create({
 			name,
-			origin_url,
-			login_path,
+			url,
 		})
 
 		response.body = { id: id.toString('hex') }
@@ -111,15 +104,9 @@ module.exports = class WebstieController extends Controller {
 				type: 'string',
 				max: 45,
 			},
-			origin_url: {
+			url: {
 				type: 'url',
 				max: 45,
-			},
-			login_path: {
-				type: 'string',
-				max: 45,
-				format: /^(\/\S*)?$/,
-				required: false,
 			},
 		}, request.body)
 
@@ -130,7 +117,7 @@ module.exports = class WebstieController extends Controller {
 		}
 
 		const id = Buffer.from(request.query.id, 'hex')
-		const { name, origin_url, login_path } = request.body
+		const { name, url } = request.body
 
 		const website = await ctx.service.website.getById(id)
 		if (!website) {
@@ -148,8 +135,7 @@ module.exports = class WebstieController extends Controller {
 
 		await ctx.service.website.update(id, {
 			name,
-			origin_url,
-			login_path,
+			url,
 		})
 
 		response.status = 200
