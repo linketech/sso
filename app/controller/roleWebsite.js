@@ -32,7 +32,12 @@ module.exports = class RoleWebstieController extends Controller {
 			website_id,
 		})
 
-		response.body = websites
+		response.body = websites.map((website) => ({
+			role_id: website.role_id.toString('hex'),
+			role_name: website.role_name,
+			website_id: website.website_id.toString('hex'),
+			website_name: website.website_name,
+		}))
 	}
 
 	async update() {

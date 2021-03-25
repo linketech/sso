@@ -31,7 +31,13 @@ module.exports = class RolePermissionController extends Controller {
 			role_id,
 			permission_id,
 		})
-		response.body = permissions
+		response.body = permissions.map((permission) => ({
+			role_id: permission.role_id.toString('hex'),
+			role_name: permission.role_name,
+			permission_id: permission.permission_id.toString('hex'),
+			permission_path: permission.permission_path,
+			permission_method: permission.permission_method,
+		}))
 	}
 
 	async update() {

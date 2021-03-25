@@ -5,11 +5,13 @@ module.exports = class RolePermissionService extends Service {
 		const { knex } = this.app
 		const permissions = await knex
 			.select()
-			.column(knex.raw('hex(role_id) as role_id'))
-			.column({ role_name: 'role.name' })
-			.column(knex.raw('hex(permission_id) as permission_id'))
-			.column({ permission_path: 'permission.path' })
-			.column({ permission_method: 'permission.method' })
+			.column({
+				role_id: 'role.id',
+				role_name: 'role.name',
+				permission_id: 'permission.id',
+				permission_path: 'permission.path',
+				permission_method: 'permission.method',
+			})
 			.from('role_has_permission')
 			.leftJoin('role', 'role_has_permission.role_id', 'role.id')
 			.leftJoin('permission', 'role_has_permission.permission_id', 'permission.id')

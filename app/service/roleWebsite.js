@@ -5,10 +5,12 @@ module.exports = class RoleWebsiteService extends Service {
 		const { knex } = this.app
 		const websites = await knex
 			.select()
-			.column(knex.raw('hex(role.id) as role_id'))
-			.column({ role_name: 'role.name' })
-			.column(knex.raw('hex(website.id) as website_id'))
-			.column({ website_name: 'website.name' })
+			.column({
+				role_id: 'role.id',
+				role_name: 'role.name',
+				website_id: 'website.id',
+				website_name: 'website.name',
+			})
 			.from('role_has_website')
 			.leftJoin('role', 'role_has_website.role_id', 'role.id')
 			.leftJoin('website', 'role_has_website.website_id', 'website.id')
