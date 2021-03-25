@@ -27,36 +27,15 @@ module.exports = class RolePermissionService extends Service {
 		return permissions
 	}
 
-	async create(roleId, permissionIdList) {
-		const { knex } = this.app
-		await knex
-			.insert(permissionIdList.map((permissionId) => ({
-				role_id: roleId,
-				permission_id: permissionId,
-			})))
-			.into('role_has_permission')
-	}
-
-	async destroy(roleId, permissionIdList) {
-		const { knex } = this.app
-
-		await knex.transaction((trx) => Promise.all(permissionIdList.map((permissionId) => trx('role_has_permission')
-			.where({
-				role_id: roleId,
-				permission_id: permissionId,
-			})
-			.del())))
-	}
-
 	async update(roleId, permissionIdList) {
 		const { knex } = this.app
 
 		await knex.transaction(async (trx) => {
 			await trx('role_has_permission').where({ role_id: roleId }).del()
 			if (permissionIdList && permissionIdList.length > 0) {
-				await trx('role_has_permission').insert(permissionIdList.map((websiteId) => ({
+				await trx('role_has_permission').insert(permissionIdList.map((permissionId) => ({
 					role_id: roleId,
-					website_id: websiteId,
+					permission_id: permissionId,
 				})))
 			}
 		})

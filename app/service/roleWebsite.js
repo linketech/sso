@@ -26,22 +26,6 @@ module.exports = class RoleWebsiteService extends Service {
 		return websites
 	}
 
-	async getById({ role_id, website_id }) {
-		const { knex } = this.app
-
-		const website = await knex
-			.select()
-			.column(knex.raw('1'))
-			.from('role_has_website')
-			.where({
-				role_id,
-				website_id,
-			})
-			.first()
-
-		return website
-	}
-
 	async update(roleId, websiteIdList) {
 		const { knex } = this.app
 
