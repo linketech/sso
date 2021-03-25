@@ -96,15 +96,8 @@ module.exports = class WebsiteService extends Service {
 		const { knex } = this.app
 
 		await knex.transaction(async (trx) => {
-			const role = await trx('role')
-				.select()
-				.column('id')
-				.where({ name: 'admin' })
-				.first()
-
 			await trx('role_has_website')
 				.where({
-					role_id: role.id,
 					website_id: id,
 				})
 				.del()
