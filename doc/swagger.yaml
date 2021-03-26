@@ -354,7 +354,7 @@ paths:
   /permission:
     get:
       tags:
-        - 权限组
+        - 权限
       summary: 查看所有权限
       responses:
         '200':
@@ -375,8 +375,42 @@ paths:
                     method:
                       type: string
                       description: 权限的HTTP请求方法
+                    description:
+                      type: string
+                      description: 权限描述
+                    group_name:
+                      type: string
+                      description: 分组名
       security:
         - cookieAuth: []
+    put:
+      tags:
+        - 权限
+      summary: 修改权限
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 权限ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: 权限描述
+                group_name:
+                  type: string
+                  description: 分组名
+              required:
+                - description
+                - group_name
+      responses:
+        '200':
+          description: 请求成功
   /role/permission:
     get:
       tags:

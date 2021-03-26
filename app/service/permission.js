@@ -10,6 +10,8 @@ module.exports = class PermissionService extends Service {
 			.column('id')
 			.column('path')
 			.column('method')
+			.column('description')
+			.column('group_name')
 			.from('permission')
 			.where((builder) => {
 				if (idList && idList.length > 0) {
@@ -101,5 +103,31 @@ module.exports = class PermissionService extends Service {
 				'role_has_permission.role_id': role_id,
 			})
 		return permissions
+	}
+
+	async getById(id) {
+		const { knex } = this.app
+
+		const permission = await knex
+			.select()
+			.column('permission.id')
+			.column('permission.path')
+			.column('permission.method')
+			.from('permission')
+			.where({ id })
+			.first()
+
+		return permission
+	}
+
+	async update(id, { description, group_name }) {
+		const { knex } = this.app
+		await knex
+			.update({
+				description,
+				group_name,
+			})
+			.table('permission')
+			.where({ id })
 	}
 }

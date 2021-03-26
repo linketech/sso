@@ -28,6 +28,7 @@ module.exports = ({ router, controller }) => {
 	subRouter.delete('/role', loginFilter, permissionFilter, controller.role.destroy)
 
 	subRouter.get('/permission', loginFilter, permissionFilter, controller.permission.index)
+	subRouter.put('/permission', loginFilter, permissionFilter, controller.permission.update)
 
 	subRouter.get('/role/permission', loginFilter, permissionFilter, controller.rolePermission.index)
 	subRouter.put('/role/permission', loginFilter, permissionFilter, controller.rolePermission.update)
