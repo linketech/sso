@@ -23,7 +23,11 @@ module.exports = class WebstieController extends Controller {
 				max: 45,
 			},
 			url: {
-				type: 'url',
+				type: 'string',
+				max: 90,
+			},
+			group_name: {
+				type: 'string',
 				max: 45,
 			},
 		}, request.body)
@@ -34,7 +38,7 @@ module.exports = class WebstieController extends Controller {
 			return
 		}
 
-		const { name, url } = request.body
+		const { name, url, group_name } = request.body
 
 		const website = await ctx.service.website.getByName(name)
 		if (website) {
@@ -46,6 +50,7 @@ module.exports = class WebstieController extends Controller {
 		const { id } = await ctx.service.website.create({
 			name,
 			url,
+			group_name,
 		})
 
 		response.body = { id: id.toString('hex') }
@@ -105,7 +110,11 @@ module.exports = class WebstieController extends Controller {
 				max: 45,
 			},
 			url: {
-				type: 'url',
+				type: 'string',
+				max: 90,
+			},
+			group_name: {
+				type: 'string',
 				max: 45,
 			},
 		}, request.body)
@@ -117,7 +126,7 @@ module.exports = class WebstieController extends Controller {
 		}
 
 		const id = Buffer.from(request.query.id, 'hex')
-		const { name, url } = request.body
+		const { name, url, group_name } = request.body
 
 		const website = await ctx.service.website.getById(id)
 		if (!website) {
@@ -136,6 +145,7 @@ module.exports = class WebstieController extends Controller {
 		await ctx.service.website.update(id, {
 			name,
 			url,
+			group_name,
 		})
 
 		response.status = 200

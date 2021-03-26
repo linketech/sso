@@ -447,6 +447,9 @@ paths:
                     url:
                       type: string
                       description: 网站地址
+                    group_name:
+                      type: string
+                      description: 分组名
                     create_time:
                       type: integer
                       description: 创建时间
@@ -465,11 +468,19 @@ paths:
                 name:
                   type: string
                   description: 网站名
-                  required: true
+                  maxLength: 45
                 url:
                   type: string
                   description: 网站地址
-                  required: true
+                  maxLength: 90
+                group_name:
+                  type: string
+                  description: 分组名
+                  maxLength: 45
+              required:
+                - name
+                - url
+                - group_name
       responses:
         '200':
           description: 请求成功
@@ -495,6 +506,13 @@ paths:
                 url:
                   type: string
                   description: 网站地址
+                group_name:
+                  type: string
+                  description: 分组名
+              required:
+                - name
+                - url
+                - group_name
       responses:
         '200':
           description: 请求成功

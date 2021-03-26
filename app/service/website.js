@@ -10,6 +10,7 @@ module.exports = class WebsiteService extends Service {
 			.column('id')
 			.column('name')
 			.column('url')
+			.column('group_name')
 			.column('create_time')
 			.from('website')
 			.where((builder) => {
@@ -62,7 +63,7 @@ module.exports = class WebsiteService extends Service {
 		return websites
 	}
 
-	async create({ name, url }) {
+	async create({ name, url, group_name }) {
 		const { knex } = this.app
 		const id = uuid.v4()
 
@@ -72,6 +73,7 @@ module.exports = class WebsiteService extends Service {
 					id,
 					name,
 					url,
+					group_name,
 					create_time: Date.now(),
 				})
 				.into('website')
@@ -108,12 +110,13 @@ module.exports = class WebsiteService extends Service {
 		})
 	}
 
-	async update(id, { name, url }) {
+	async update(id, { name, url, group_name }) {
 		const { knex } = this.app
 		await knex
 			.update({
 				name,
 				url,
+				group_name,
 			})
 			.table('website')
 			.where({ id })
