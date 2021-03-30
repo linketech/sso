@@ -116,13 +116,33 @@ paths:
                       type: object
                       description: 权限
                       properties:
+                        id:
+                          type: string
                         path:
                           type: string 
-                          description: 请求path
                         method:
                           type: string 
-                          description: 请求method
-      security:
+                        description:
+                          type: string
+                        group_name:
+                          type: string
+                  website:
+                    type: array
+                    items:
+                      type: object
+                        id:
+                          type: string
+                          description: 网站ID
+                        name:
+                          type: string
+                          description: 网站名
+                        url:
+                          type: string
+                          description: 网站地址
+                        group_name:
+                          type: string
+                          description: 分组名
+        security:
         - cookieAuth: []
   /session/user:  
     post:

@@ -105,13 +105,22 @@ module.exports = class SessionController extends Controller {
 			}
 			const permissions = await ctx.service.permission.getByRoleId(role.id)
 			if (permissions && permissions.length > 0) {
-				info.permissions = permissions.map(({ id, ...rest }) => ({
-					...rest,
+				info.permissions = permissions.map((permission) => ({
+					id: permission.id.toString('hex'),
+					path: permission.path,
+					method: permission.method,
+					description: permission.description,
+					group_name: permission.group_name,
 				}))
 			}
 			const websites = await ctx.service.website.getByRoleId(role.id)
 			if (websites && websites.length > 0) {
-				info.websites = websites
+				info.websites = websites.map((website) => ({
+					id: website.id.toString('hex'),
+					name: website.name,
+					url: website.url,
+					group_name: website.group_name,
+				}))
 			}
 		}
 

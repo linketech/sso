@@ -97,8 +97,10 @@ module.exports = class PermissionService extends Service {
 			.column('permission.id')
 			.column('permission.path')
 			.column('permission.method')
-			.from('role_has_permission')
-			.join('permission', 'role_has_permission.permission_id', 'permission.id')
+			.column('permission.description')
+			.column('permission.group_name')
+			.from('permission')
+			.join('role_has_permission', 'permission.id', 'role_has_permission.permission_id')
 			.where({
 				'role_has_permission.role_id': role_id,
 			})

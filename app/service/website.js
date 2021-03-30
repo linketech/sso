@@ -54,11 +54,15 @@ module.exports = class WebsiteService extends Service {
 
 		const websites = await knex
 			.select()
+			.column('website.id')
 			.column('website.name')
+			.column('website.url')
+			.column('website.group_name')
 			.from('website')
 			.leftJoin('role_has_website', 'website.id', 'role_has_website.website_id')
-			.leftJoin('role', 'role_has_website.role_id', 'role.id')
-			.where({ 'role.id': role_id })
+			.where({
+				'role_has_website.role_id': role_id,
+			})
 
 		return websites
 	}
