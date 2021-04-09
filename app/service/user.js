@@ -1,6 +1,8 @@
 const { Service } = require('egg')
+const crypto = require('crypto')
 
-const crypto = require('../util/crypto')
+const argon2 = require('argon2')
+const { sha256 } = require('../util/crypto')
 const uuid = require('../util/uuid')
 const { USER: { PASSWORD } } = require('../constant')
 
@@ -72,12 +74,11 @@ module.exports = class UserService extends Service {
 			newFrontendSalt = Buffer.from(frontendSalt, 'hex')
 			newPassword = Buffer.from(password, 'hex')
 		} else {
-			newFrontendSalt = uuid.v4()
-			newPassword = crypto.sha256(Buffer.from(password, 'ascii'), newFrontendSalt)
+			newFrontendSalt = crypto.randomBytes(16)
+			newPassword = sha256(Buffer.from(password, 'ascii'), newFrontendSalt)
 		}
 
-		const salt = uuid.v4()
-		const hashPassword = crypto.sha256(newPassword, salt)
+		const hashPassword = await argon2.hash(newPassword)
 
 		const id = uuid.v4()
 		await knex
@@ -85,7 +86,6 @@ module.exports = class UserService extends Service {
 				id,
 				name,
 				hash_password: hashPassword,
-				salt,
 				frontend_salt: newFrontendSalt,
 				role_id,
 				create_time: Date.now(),
@@ -121,7 +121,6 @@ module.exports = class UserService extends Service {
 			.column('id')
 			.column('name')
 			.column('hash_password')
-			.column('salt')
 			.column('frontend_salt')
 			.column('disabled')
 			.from('user')
@@ -137,9 +136,9 @@ module.exports = class UserService extends Service {
 
 			const beforeHashedPassword = type === PASSWORD.HASHED
 				? Buffer.from(password, 'hex')
-				: crypto.sha256(Buffer.from(password, 'ascii'), user.frontend_salt)
-			const hashPassword = crypto.sha256(beforeHashedPassword, user.salt)
-			if (hashPassword.equals(user.hash_password)) {
+				: sha256(Buffer.from(password, 'ascii'), user.frontend_salt)
+
+			if (await argon2.verify(user.hash_password, beforeHashedPassword)) {
 				return {
 					id: user.id,
 					name: user.name,
