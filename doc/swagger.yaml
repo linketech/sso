@@ -1,0 +1,642 @@
+openapi: 3.0.0
+info:
+  description: SSO HTTP API文档.
+  version: 1.0.0
+  title: SSO Http API
+servers:
+  - description: 本地
+    url: 'http://localhost/api'
+  - description: 测试网
+    url: 'http://sso-alpha.dbjtech.com/api'
+paths:
+  /session/frontend_salt/{username}:
+    get:
+      tags:
+        - session
+      summary: 获取前端登录时需要的盐
+      parameters: 
+        - name: username
+          in: path
+          description: 用户名
+          required: true
+          schema:
+            type: string
+          example: ivan
+      responses:
+        '200':
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  frontend_salt:
+                    type: string
+  /session:
+    post:
+      tags:
+        - session
+      summary: 登录
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                type:
+                  type: integer
+                  description: 密码是否已经HASH过
+                  enum: [0, 1]
+                  example: 1
+                password:
+                  type: string
+                  description: 经过hmac-sha256哈希后的值(如果type为1，则输入HASH过的密码，否则输入原始密码)
+                  pattern: '^[0-9a-fA-F]{64}|\w{1,32}$'
+                  example: "746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f"
+              required:
+                - username
+                - password
+            examples:
+              '1':
+                value:
+                  username: ivan
+                  password: >-
+                    746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f
+      responses:
+        '200':
+          description: >
+            Successfully authenticated.
+            The session ID is returned in a cookie named `EGG_SESS`. You need to include this cookie in subsequent requests.
+          headers: 
+            Set-Cookie:
+              schema: 
+                type: string
+                example: EGG_SESS=abcde12345; Path=/; HttpOnly
+      security: []
+    delete:
+      tags:
+        - session
+      summary: 登出
+      responses:
+        '200':
+          description: 登出成功
+      security:
+        - cookieAuth: []
+    get:
+      tags:
+        - session
+      summary: 获取会话内容
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    description: 用户信息
+                    properties:
+                      name:
+                        type: string
+                        description: 用户名
+                  role:
+                    type: object
+                    description: 角色信息
+                    properties:
+                      name:
+                        type: string
+                        description: 用户名
+                  permission:
+                    type: array
+                    items:
+                      type: object
+                      description: 权限
+                      properties:
+                        id:
+                          type: string
+                        path:
+                          type: string 
+                        method:
+                          type: string 
+                        description:
+                          type: string
+                        group_name:
+                          type: string
+                  website:
+                    type: array
+                    items:
+                      type: object
+                        id:
+                          type: string
+                          description: 网站ID
+                        name:
+                          type: string
+                          description: 网站名
+                        url:
+                          type: string
+                          description: 网站地址
+                        group_name:
+                          type: string
+                          description: 分组名
+        security:
+        - cookieAuth: []
+  /session/user:  
+    post:
+      tags:
+        - session
+      summary: 注册
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "ivan"
+                type:
+                  type: integer
+                  description: 密码是否已经HASH过
+                  enum: [0, 1]
+                  example: 1
+                password:
+                  type: string
+                  description: 经过hmac-sha256哈希后的值(如果type为1，则输入HASH过的密码，否则输入原始密码)
+                  pattern: '^[0-9a-fA-F]{64}|\w{1,32}$'
+                  example: "746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f"
+                frontendSalt:
+                  type: string
+                  description: 对原始密码加的盐（如果type为1，则必填）
+                  pattern: '^[0-9a-fA-F]{32}$'
+                  example: "d1b3ab63608e445ca1e26190dd141f89"
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: 请求成功
+  /jwt:
+    get:
+      tags:
+        - JWT
+      summary: 获取JWT
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: token
+      security:
+        - cookieAuth: []
+  /jwt/auth:
+    get:
+      tags:
+        - JWT
+      summary: 获取JWT
+      parameters:
+        - name: return_to
+          in: query
+          schema:
+            type: string
+            description: 重定向至哪个网站
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: token
+  /jwt/verify/{token}:
+    get:
+      tags:
+        - JWT
+      summary: 验证JWT是否合法
+      parameters: 
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJpdmFuIn0sImlhdCI6MTYxMDUyOTg3OX0.V5o45Pkh_aGPrvzydb_9iRUPGQGCePEMmRFrFLSILGeMGS7tW3WjXt3YJRU9DJ1KZYQRv4DG5KxkKfVKA2RpSw
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - cookieAuth: []
+  /user:
+    get:
+      tags:
+        - 用户
+      summary: 查看所有用户
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 用户ID
+                  name:
+                    type: string
+                    description: 用户名
+                  role_id:
+                    type: string
+                    description: 权限组ID
+                  role_name:
+                    type: string
+                    description: 权限组名
+                  disabled:
+                    type: string
+                    description: 是否被停用
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 用户
+      summary: 修改用户
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: 用户ID
+                role_id:
+                  type: string
+                  description: 权限组ID
+                disabled:
+                  type: string
+                  description: 停用（0为不停用，1为停用）
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+    delete:
+      tags:
+        - 用户
+      summary: 删除用户
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 用户ID
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /role:
+    get:
+      tags:
+        - 权限组
+      summary: 查看所有权限组
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 权限组ID
+                  name:
+                    type: string
+                    description: 权限组名
+      security:
+        - cookieAuth: []
+    post:
+      tags:
+        - 权限组
+      summary: 创建权限组
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 权限组名
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 权限组ID
+      security:
+        - cookieAuth: []
+    delete:
+      tags:
+        - 权限组
+      summary: 删除权限组
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 用户ID
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /permission:
+    get:
+      tags:
+        - 权限
+      summary: 查看所有权限
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 权限ID
+                    path:
+                      type: string
+                      description: 权限的HTTP请求路径
+                    method:
+                      type: string
+                      description: 权限的HTTP请求方法
+                    description:
+                      type: string
+                      description: 权限描述
+                    group_name:
+                      type: string
+                      description: 分组名
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 权限
+      summary: 修改权限
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 权限ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: 权限描述
+                group_name:
+                  type: string
+                  description: 分组名
+              required:
+                - description
+                - group_name
+      responses:
+        '200':
+          description: 请求成功
+  /role/permission:
+    get:
+      tags:
+        - 权限组与权限的关系
+      summary: 查看权限组拥有的权限
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 权限ID
+                  path:
+                    type: string
+                    description: 权限的HTTP请求路径
+                  method:
+                    type: string
+                    description: 权限的HTTP请求方法
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 权限组与权限的关系
+      summary: 更新权限组与权限
+      description: 清除之前的关系，以上传的为最终结果
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_id:
+                  type: string
+                  description: 权限组ID
+                permission_id_list:
+                  type: string
+                  description: 权限ID集合
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /website:
+    get:
+      tags:
+        - 网站
+      summary: 查看所有网站
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站ID
+                    name:
+                      type: string
+                      description: 网站名
+                    url:
+                      type: string
+                      description: 网站地址
+                    group_name:
+                      type: string
+                      description: 分组名
+                    create_time:
+                      type: integer
+                      description: 创建时间
+      security:
+        - cookieAuth: []
+    post:
+      tags:
+        - 网站
+      summary: 创建权限组
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 网站名
+                  maxLength: 45
+                url:
+                  type: string
+                  description: 网站地址
+                  maxLength: 90
+                group_name:
+                  type: string
+                  description: 分组名
+                  maxLength: 45
+              required:
+                - name
+                - url
+                - group_name
+      responses:
+        '200':
+          description: 请求成功
+    put:
+      tags:
+        - 网站
+      summary: 修改网站
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 网站ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 网站名
+                url:
+                  type: string
+                  description: 网站地址
+                group_name:
+                  type: string
+                  description: 分组名
+              required:
+                - name
+                - url
+                - group_name
+      responses:
+        '200':
+          description: 请求成功
+    delete:
+      tags:
+        - 网站
+      summary: 删除网站
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+            description: 网站ID
+      responses:
+        '200':
+          description: 请求成功
+  /role/website:
+    get:
+      tags:
+        - 权限组与网站的关系
+      summary: 查看权限组与网站的关系
+      responses:
+        '200':
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    role_id:
+                      type: string
+                      description: 权限组ID
+                    role_name:
+                      type: string
+                      description: 权限组名
+                    website_id:
+                      type: string
+                      description: 网站ID
+                    website_name:
+                      type: string
+                      description: 网站名
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 权限组与网站的关系
+      summary: 更新权限组与网站
+      description: 清除之前的关系，以上传的为最终结果
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_id:
+                  type: string
+                  description: 权限组ID
+                website_id_list:
+                  type: string
+                  description: 网站ID集合
+      responses:
+        '200':
+          description: 请求成功
+      security:
+        - cookieAuth: []
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: EGG_SESS
