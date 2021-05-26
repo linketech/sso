@@ -13,19 +13,22 @@ module.exports = class JwtController extends Controller {
 	}
 
 	async getToken(ctx) {
-		const user_id = Buffer.from(ctx.session.user.id, 'hex')
-		const role = await ctx.service.role.getByUserId(user_id)
+		const token = {}
 
-		const websites = await ctx.service.website.getByRoleId(role.id)
+		const role = await ctx.service.role.getByUserId(Buffer.from(ctx.session.user.id, 'hex'))
+		if (role && role.id && role.name) {
+			token.role = { name: role.name }
+			const websites = (await ctx.service.website.getByRoleId(role.id))
+			if (websites && websites.length > 0) {
+				token.websites = websites.map(({ name }) => name)
+			}
+		}
 
 		return jwt.sign({
 			user: {
 				name: ctx.session.user.name,
 			},
-			role: {
-				name: role.name,
-			},
-			websites: websites.map(({ name }) => name),
+			...token,
 		}, this.PRIVATE_KEY, { algorithm: 'ES256' })
 	}
 
