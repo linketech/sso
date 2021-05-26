@@ -50,7 +50,6 @@ module.exports = (appInfo) => ({
 	},
 	jwt: {
 		key: {
-			public: fs.readFileSync(`${__dirname}/jwt/es256/public.key`),
 			private: fs.readFileSync(`${__dirname}/jwt/es256/private.key`),
 		},
 	},

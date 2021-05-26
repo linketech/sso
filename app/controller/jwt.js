@@ -1,4 +1,5 @@
 const { Controller } = require('egg')
+const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 
 module.exports = class JwtController extends Controller {
@@ -7,8 +8,11 @@ module.exports = class JwtController extends Controller {
 
 		const jwtConfig = this.config.jwt
 		Object.assign(this, {
-			PUBLIC_KEY: jwtConfig.key.public,
 			PRIVATE_KEY: jwtConfig.key.private,
+			PUBLIC_KEY: crypto.createPublicKey(jwtConfig.key.private).export({
+				type: 'spki',
+				format: 'pem',
+			}),
 		})
 	}
 
