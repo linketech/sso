@@ -50,7 +50,6 @@ module.exports = (appInfo) => ({
 	},
 	jwt: {
 		key: {
-			public: fs.readFileSync(`${__dirname}/jwt/es256/public.key`),
 			private: fs.readFileSync(`${__dirname}/jwt/es256/private.key`),
 		},
 	},
@@ -59,7 +58,7 @@ module.exports = (appInfo) => ({
 		disableConsoleAfterReady: false,
 	},
 	sso: {
-		address: 'https://cloud-production-alpha.leaf.linketech.cn',
+		address: env.SSO_ADDRESS || 'https://cloud-production-alpha.leaf.linketech.cn',
 		authPath: '/user/auth',
 	},
 })
