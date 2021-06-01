@@ -14,6 +14,7 @@ module.exports = (appInfo) => ({
 	middleware: [
 		'cors',
 		'logger',
+		'errorHandler',
 	],
 	cluster: {
 		listen: {

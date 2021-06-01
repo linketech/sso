@@ -4,17 +4,7 @@ module.exports = class PermissionController extends Controller {
 	async index() {
 		const { ctx } = this
 		const { response } = ctx
-
-		const permissions = await ctx.service.permission.list()
-
-		response.status = 200
-		response.body = permissions.map((permission) => ({
-			id: permission.id.toString('hex'),
-			path: permission.path,
-			method: permission.method,
-			description: permission.description,
-			group_name: permission.group_name,
-		}))
+		response.body = await ctx.service.permission.show()
 	}
 
 	async update() {
