@@ -30,6 +30,10 @@ module.exports = (appInfo) => ({
 				user: env.MYSQL_USER || 'root',
 				password: env.MYSQL_PASSWORD || 'root',
 				database: 'sso',
+				pool: {
+					min: 2,
+					max: 10,
+				},
 			},
 		},
 	},
