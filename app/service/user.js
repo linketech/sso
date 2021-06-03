@@ -222,6 +222,29 @@ module.exports = class UserService extends Service {
 			.where({ id })
 	}
 
+	async resetPassword(id) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column('frontend_salt')
+			.from('user')
+			.where({ id })
+			.first()
+
+		if (!user) {
+			throw new ServiceError({ message: '用户不存在' })
+		}
+
+		const hash_password = await genPassword(PASSWORD.NO_HASHED, '12345678', user.frontend_salt)
+
+		await knex('user')
+			.update({
+				hash_password,
+			})
+			.where({ id })
+	}
+
 	async list() {
 		const { knex } = this.app
 		const roles = await knex

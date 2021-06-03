@@ -23,6 +23,7 @@ module.exports = ({ router, controller }) => {
 
 	subRouter.get('/user', loginFilter, permissionFilter('查看所有', '用户'), controller.user.index)
 	subRouter.put('/user', loginFilter, permissionFilter('修改', '用户'), controller.user.update)
+	subRouter.put('/user/password/reset', loginFilter, permissionFilter('重置密码', '用户'), controller.user.resetPassword)
 	subRouter.delete('/user', loginFilter, permissionFilter('删除', '用户'), controller.user.destroy)
 
 	subRouter.get('/role', loginFilter, permissionFilter('查看所有', '权限组'), controller.role.index)

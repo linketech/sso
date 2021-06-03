@@ -341,6 +341,26 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
+  /user/password/reset:
+    put:
+      tags:
+        - 用户
+      summary: 重置用户密码(重置为12345678)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: 用户ID
+                  pattern: "^[0-9a-fA-F]{32}$"
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
   /role:
     get:
       tags:
