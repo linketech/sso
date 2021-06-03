@@ -19,6 +19,8 @@ module.exports = ({ router, controller }) => {
 	subRouter.get('/jwt/auth', controller.jwt.auth)
 	subRouter.get('/jwt/verify/:token', controller.jwt.verify)
 
+	subRouter.put('/self/password', loginFilter, controller.self.updatePassword)
+
 	subRouter.get('/user', loginFilter, permissionFilter('查看所有', '用户'), controller.user.index)
 	subRouter.put('/user', loginFilter, permissionFilter('修改', '用户'), controller.user.update)
 	subRouter.delete('/user', loginFilter, permissionFilter('删除', '用户'), controller.user.destroy)

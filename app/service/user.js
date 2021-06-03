@@ -4,7 +4,27 @@ const crypto = require('crypto')
 const argon2 = require('argon2')
 const { sha256 } = require('../util/crypto')
 const uuid = require('../util/uuid')
+const ServiceError = require('../util/ServiceError')
 const { USER: { PASSWORD } } = require('../constant')
+
+async function checkPassword(type, hash_password, password, frontend_salt) {
+	const beforeHashedPassword = type === PASSWORD.NO_HASHED
+		? sha256(Buffer.from(password, 'ascii'), frontend_salt)
+		: Buffer.from(password, 'hex')
+
+	return argon2.verify(hash_password, beforeHashedPassword)
+}
+
+async function genPassword(type, password, frontend_salt) {
+	let newPassword
+	if (type === PASSWORD.NO_HASHED) {
+		newPassword = sha256(Buffer.from(password, 'ascii'), frontend_salt)
+	} else {
+		newPassword = Buffer.from(password, 'hex')
+	}
+
+	return argon2.hash(newPassword)
+}
 
 module.exports = class UserService extends Service {
 	/**
@@ -67,26 +87,25 @@ module.exports = class UserService extends Service {
 	async create(name, password, frontendSalt, role_id = null) {
 		const { knex } = this.app
 
-		let newPassword
-		let newFrontendSalt
-
+		let type
+		let frontend_salt
 		if (frontendSalt) {
-			newFrontendSalt = Buffer.from(frontendSalt, 'hex')
-			newPassword = Buffer.from(password, 'hex')
+			frontend_salt = Buffer.from(frontendSalt, 'hex')
+			type = PASSWORD.HASHED
 		} else {
-			newFrontendSalt = crypto.randomBytes(16)
-			newPassword = sha256(Buffer.from(password, 'ascii'), newFrontendSalt)
+			frontend_salt = crypto.randomBytes(16)
+			type = PASSWORD.NO_HASHED
 		}
 
-		const hashPassword = await argon2.hash(newPassword)
+		const hash_password = await genPassword(type, password, frontend_salt)
 
 		const id = uuid.v4()
 		await knex
 			.insert({
 				id,
 				name,
-				hash_password: hashPassword,
-				frontend_salt: newFrontendSalt,
+				hash_password,
+				frontend_salt,
 				role_id,
 				create_time: Date.now(),
 			})
@@ -134,11 +153,7 @@ module.exports = class UserService extends Service {
 				}
 			}
 
-			const beforeHashedPassword = type === PASSWORD.HASHED
-				? Buffer.from(password, 'hex')
-				: sha256(Buffer.from(password, 'ascii'), user.frontend_salt)
-
-			if (await argon2.verify(user.hash_password, beforeHashedPassword)) {
+			if (await checkPassword(type, user.hash_password, password, user.frontend_salt)) {
 				return {
 					id: user.id,
 					name: user.name,
@@ -175,6 +190,35 @@ module.exports = class UserService extends Service {
 				disabled,
 			})
 			.table('user')
+			.where({ id })
+	}
+
+	async updatePassword(id, type, oldPassword, newPassword) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column('hash_password')
+			.column('frontend_salt')
+			.column('disabled')
+			.from('user')
+			.where({ id })
+			.first()
+
+		if (!user) {
+			throw new ServiceError({ message: '用户不存在' })
+		}
+
+		if (!(await checkPassword(type, user.hash_password, oldPassword, user.frontend_salt))) {
+			throw new ServiceError({ message: '旧密码错误' })
+		}
+
+		const hash_password = await genPassword(type, newPassword, user.frontend_salt)
+
+		await knex('user')
+			.update({
+				hash_password,
+			})
 			.where({ id })
 	}
 
