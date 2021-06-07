@@ -7,7 +7,7 @@ module.exports = class PermissionService extends Service {
 		const { knex } = this.app
 		const permissions = await knex
 			.select()
-			.column(knex.raw('hex(id) as id'))
+			.column('id')
 			.column('path')
 			.column('method')
 			.column('description')

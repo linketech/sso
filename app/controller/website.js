@@ -5,11 +5,14 @@ module.exports = class WebstieController extends Controller {
 		const { ctx } = this
 		const { response } = ctx
 
-		const websites = await ctx.service.website.list()
+		const websites = await ctx.service.website.show()
 
-		response.body = websites.map(({ id, ...rest }) => ({
-			id: id.toString('hex'),
-			...rest,
+		response.body = websites.map((website) => ({
+			id: website.id.toString('hex'),
+			name: website.name,
+			url: website.url,
+			group_name: website.group_name,
+			create_time: website.create_time,
 		}))
 	}
 

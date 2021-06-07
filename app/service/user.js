@@ -175,11 +175,7 @@ module.exports = class UserService extends Service {
 			.where({ name })
 			.first()
 
-		if (user && user.frontend_salt) {
-			return user.frontend_salt.toString('hex')
-		}
-
-		return undefined
+		return user && user.frontend_salt
 	}
 
 	async updateRole(id, { role_id: roleId, disabled }) {
