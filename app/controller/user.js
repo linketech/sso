@@ -75,6 +75,30 @@ module.exports = class UserController extends Controller {
 		response.status = 200
 	}
 
+	async resetPassword() {
+		const { ctx } = this
+		const { request, response } = ctx
+
+		ctx.validate({
+			body: {
+				type: 'object',
+				properties: {
+					id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+				},
+				required: ['id'],
+			},
+		})
+
+		const id = Buffer.from(request.body.id, 'hex')
+
+		await ctx.service.user.resetPassword(id)
+
+		response.status = 200
+	}
+
 	async destroy() {
 		const { ctx, app } = this
 		const { request, response } = ctx

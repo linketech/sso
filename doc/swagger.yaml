@@ -5,16 +5,16 @@ info:
   title: SSO Http API
 servers:
   - description: 本地
-    url: 'http://localhost/api'
+    url: "http://localhost/api"
   - description: 测试网
-    url: 'http://sso-alpha.dbjtech.com/api'
+    url: "http://sso-alpha.dbjtech.com/api"
 paths:
   /session/frontend_salt/{username}:
     get:
       tags:
         - session
       summary: 获取前端登录时需要的盐
-      parameters: 
+      parameters:
         - name: username
           in: path
           description: 用户名
@@ -23,7 +23,7 @@ paths:
             type: string
           example: ivan
       responses:
-        '200':
+        "200":
           description: 修改成功
           content:
             application/json:
@@ -59,19 +59,19 @@ paths:
                 - username
                 - password
             examples:
-              '1':
+              "1":
                 value:
                   username: ivan
                   password: >-
                     746c21c9c029efdb5655526379b421f48d7e3e00123be2c78e437c4f5383cb5f
       responses:
-        '200':
+        "200":
           description: >
             Successfully authenticated.
             The session ID is returned in a cookie named `EGG_SESS`. You need to include this cookie in subsequent requests.
-          headers: 
+          headers:
             Set-Cookie:
-              schema: 
+              schema:
                 type: string
                 example: EGG_SESS=abcde12345; Path=/; HttpOnly
       security: []
@@ -80,7 +80,7 @@ paths:
         - session
       summary: 登出
       responses:
-        '200':
+        "200":
           description: 登出成功
       security:
         - cookieAuth: []
@@ -89,7 +89,7 @@ paths:
         - session
       summary: 获取会话内容
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -119,9 +119,9 @@ paths:
                         id:
                           type: string
                         path:
-                          type: string 
+                          type: string
                         method:
-                          type: string 
+                          type: string
                         description:
                           type: string
                         group_name:
@@ -130,6 +130,7 @@ paths:
                     type: array
                     items:
                       type: object
+                      properties:
                         id:
                           type: string
                           description: 网站ID
@@ -142,9 +143,9 @@ paths:
                         group_name:
                           type: string
                           description: 分组名
-        security:
+      security:
         - cookieAuth: []
-  /session/user:  
+  /session/user:
     post:
       tags:
         - session
@@ -171,21 +172,52 @@ paths:
                 frontendSalt:
                   type: string
                   description: 对原始密码加的盐（如果type为1，则必填）
-                  pattern: '^[0-9a-fA-F]{32}$'
+                  pattern: "^[0-9a-fA-F]{32}$"
                   example: "d1b3ab63608e445ca1e26190dd141f89"
               required:
                 - username
                 - password
       responses:
-        '200':
+        "200":
           description: 请求成功
+  /self/password:
+    put:
+      tags:
+        - 用户自身
+      summary: 修改密码
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: integer
+                  description: 密码是否已经HASH过
+                  enum: [0, 1]
+                  example: 1
+                oldPpassword:
+                  type: string
+                  description: 经过hmac-sha256哈希后的值(如果type为1，则输入HASH过的密码，否则输入原始密码)
+                  pattern: '^[0-9a-fA-F]{64}|\w{1,32}$'
+                  example: "123456"
+                newPassword:
+                  type: string
+                  description: 经过hmac-sha256哈希后的值(如果type为1，则输入HASH过的密码，否则输入原始密码)
+                  pattern: '^[0-9a-fA-F]{64}|\w{1,32}$'
+                  example: "111111"
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
   /jwt:
     get:
       tags:
         - JWT
       summary: 获取JWT
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -209,7 +241,7 @@ paths:
             type: string
             description: 重定向至哪个网站
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -224,7 +256,7 @@ paths:
       tags:
         - JWT
       summary: 验证JWT是否合法
-      parameters: 
+      parameters:
         - name: token
           in: path
           required: true
@@ -232,7 +264,7 @@ paths:
             type: string
           example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Im5hbWUiOiJpdmFuIn0sImlhdCI6MTYxMDUyOTg3OX0.V5o45Pkh_aGPrvzydb_9iRUPGQGCePEMmRFrFLSILGeMGS7tW3WjXt3YJRU9DJ1KZYQRv4DG5KxkKfVKA2RpSw
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -246,7 +278,7 @@ paths:
         - 用户
       summary: 查看所有用户
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -290,7 +322,7 @@ paths:
                   type: string
                   description: 停用（0为不停用，1为停用）
       responses:
-        '200':
+        "200":
           description: 请求成功
       security:
         - cookieAuth: []
@@ -305,7 +337,27 @@ paths:
             type: string
             description: 用户ID
       responses:
-        '200':
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /user/password/reset:
+    put:
+      tags:
+        - 用户
+      summary: 重置用户密码(重置为12345678)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: 用户ID
+                  pattern: "^[0-9a-fA-F]{32}$"
+      responses:
+        "200":
           description: 请求成功
       security:
         - cookieAuth: []
@@ -315,7 +367,7 @@ paths:
         - 权限组
       summary: 查看所有权限组
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -344,7 +396,7 @@ paths:
                   type: string
                   description: 权限组名
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -367,7 +419,7 @@ paths:
             type: string
             description: 用户ID
       responses:
-        '200':
+        "200":
           description: 请求成功
       security:
         - cookieAuth: []
@@ -377,7 +429,7 @@ paths:
         - 权限
       summary: 查看所有权限
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -429,7 +481,7 @@ paths:
                 - description
                 - group_name
       responses:
-        '200':
+        "200":
           description: 请求成功
   /role/permission:
     get:
@@ -437,7 +489,7 @@ paths:
         - 权限组与权限的关系
       summary: 查看权限组拥有的权限
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -473,7 +525,7 @@ paths:
                   type: string
                   description: 权限ID集合
       responses:
-        '200':
+        "200":
           description: 请求成功
       security:
         - cookieAuth: []
@@ -483,7 +535,7 @@ paths:
         - 网站
       summary: 查看所有网站
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -536,7 +588,7 @@ paths:
                 - url
                 - group_name
       responses:
-        '200':
+        "200":
           description: 请求成功
     put:
       tags:
@@ -568,7 +620,7 @@ paths:
                 - url
                 - group_name
       responses:
-        '200':
+        "200":
           description: 请求成功
     delete:
       tags:
@@ -581,7 +633,7 @@ paths:
             type: string
             description: 网站ID
       responses:
-        '200':
+        "200":
           description: 请求成功
   /role/website:
     get:
@@ -589,7 +641,7 @@ paths:
         - 权限组与网站的关系
       summary: 查看权限组与网站的关系
       responses:
-        '200':
+        "200":
           description: 请求成功
           content:
             application/json:
@@ -630,7 +682,7 @@ paths:
                   type: string
                   description: 网站ID集合
       responses:
-        '200':
+        "200":
           description: 请求成功
       security:
         - cookieAuth: []

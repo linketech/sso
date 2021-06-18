@@ -3,6 +3,21 @@ const { Service } = require('egg')
 const uuid = require('../util/uuid')
 
 module.exports = class PermissionService extends Service {
+	async show() {
+		const { knex } = this.app
+		const permissions = await knex
+			.select()
+			.column('id')
+			.column('path')
+			.column('method')
+			.column('description')
+			.column('group_name')
+			.from('permission')
+			.orderBy('group_name')
+			.orderByRaw('case when method=\'GET\' then 0 when method=\'POST\' then 1 when method=\'DELETE\' then 2 when method=\'PUT\' then 3 else method end')
+		return permissions
+	}
+
 	async list(idList) {
 		const { knex } = this.app
 		const roles = await knex
@@ -54,11 +69,13 @@ module.exports = class PermissionService extends Service {
 
 				const now = Date.now()
 				await trx
-					.insert(addList.map(({ id, path, regexp, method }) => ({
+					.insert(addList.map(({ id, path, regexp, method, description, group_name }) => ({
 						id,
 						path,
 						regexp,
 						method,
+						description,
+						group_name,
 						create_time: now,
 					})))
 					.into('permission')

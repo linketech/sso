@@ -19,25 +19,28 @@ module.exports = ({ router, controller }) => {
 	subRouter.get('/jwt/auth', controller.jwt.auth)
 	subRouter.get('/jwt/verify/:token', controller.jwt.verify)
 
-	subRouter.get('/user', loginFilter, permissionFilter, controller.user.index)
-	subRouter.put('/user', loginFilter, permissionFilter, controller.user.update)
-	subRouter.delete('/user', loginFilter, permissionFilter, controller.user.destroy)
+	subRouter.put('/self/password', loginFilter, controller.self.updatePassword)
 
-	subRouter.get('/role', loginFilter, permissionFilter, controller.role.index)
-	subRouter.post('/role', loginFilter, permissionFilter, controller.role.create)
-	subRouter.delete('/role', loginFilter, permissionFilter, controller.role.destroy)
+	subRouter.get('/user', loginFilter, permissionFilter('查看所有', '用户'), controller.user.index)
+	subRouter.put('/user', loginFilter, permissionFilter('修改', '用户'), controller.user.update)
+	subRouter.put('/user/password/reset', loginFilter, permissionFilter('重置密码', '用户'), controller.user.resetPassword)
+	subRouter.delete('/user', loginFilter, permissionFilter('删除', '用户'), controller.user.destroy)
 
-	subRouter.get('/permission', loginFilter, permissionFilter, controller.permission.index)
-	subRouter.put('/permission', loginFilter, permissionFilter, controller.permission.update)
+	subRouter.get('/role', loginFilter, permissionFilter('查看所有', '权限组'), controller.role.index)
+	subRouter.post('/role', loginFilter, permissionFilter('创建', '权限组'), controller.role.create)
+	subRouter.delete('/role', loginFilter, permissionFilter('删除', '权限组'), controller.role.destroy)
 
-	subRouter.get('/role/permission', loginFilter, permissionFilter, controller.rolePermission.index)
-	subRouter.put('/role/permission', loginFilter, permissionFilter, controller.rolePermission.update)
+	subRouter.get('/permission', loginFilter, permissionFilter('查看所有', '权限'), controller.permission.index)
+	subRouter.put('/permission', loginFilter, permissionFilter('修改', '权限'), controller.permission.update)
 
-	subRouter.get('/website', loginFilter, permissionFilter, controller.website.index)
-	subRouter.post('/website', loginFilter, permissionFilter, controller.website.create)
-	subRouter.delete('/website', loginFilter, permissionFilter, controller.website.destroy)
-	subRouter.put('/website', loginFilter, permissionFilter, controller.website.update)
+	subRouter.get('/role/permission', loginFilter, permissionFilter('查看所有', '权限组与权限的关系'), controller.rolePermission.index)
+	subRouter.put('/role/permission', loginFilter, permissionFilter('更新', '权限组与权限的关系'), controller.rolePermission.update)
 
-	subRouter.get('/role/website', loginFilter, permissionFilter, controller.roleWebsite.index)
-	subRouter.put('/role/website', loginFilter, permissionFilter, controller.roleWebsite.update)
+	subRouter.get('/website', loginFilter, permissionFilter('查看所有', '网站'), controller.website.index)
+	subRouter.post('/website', loginFilter, permissionFilter('创建', '网站'), controller.website.create)
+	subRouter.delete('/website', loginFilter, permissionFilter('删除', '网站'), controller.website.destroy)
+	subRouter.put('/website', loginFilter, permissionFilter('更新', '网站'), controller.website.update)
+
+	subRouter.get('/role/website', loginFilter, permissionFilter('查看所有', '权限组与网站的关系'), controller.roleWebsite.index)
+	subRouter.put('/role/website', loginFilter, permissionFilter('更新', '权限组与网站的关系'), controller.roleWebsite.update)
 }

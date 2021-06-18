@@ -24,7 +24,9 @@ module.exports = class SessionController extends Controller {
 		const frontend_salt = await ctx.service.user.getfrontendSaltByUsername(username)
 
 		response.status = 200
-		response.body = { frontend_salt }
+		response.body = {
+			frontend_salt: frontend_salt.toString('hex'),
+		}
 	}
 
 	async create() {
