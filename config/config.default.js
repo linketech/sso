@@ -11,6 +11,11 @@ const { env } = process
 
 module.exports = (appInfo) => ({
 	keys: `${appInfo.name}_1608715601779_9499`,
+	session: {
+		key: 'SSO_SESSION',
+		maxAge: 7 * 24 * 60 * 60 * 1000,
+		renew: true,
+	},
 	middleware: [
 		'cors',
 		'logger',
@@ -30,10 +35,6 @@ module.exports = (appInfo) => ({
 				user: env.MYSQL_USER || 'root',
 				password: env.MYSQL_PASSWORD || 'root',
 				database: 'sso',
-				pool: {
-					min: 2,
-					max: 10,
-				},
 			},
 		},
 	},
