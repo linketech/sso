@@ -115,15 +115,6 @@ module.exports = class SessionController extends Controller {
 					group_name: permission.group_name,
 				}))
 			}
-			const websites = await ctx.service.website.getByRoleId(role.id)
-			if (websites && websites.length > 0) {
-				info.websites = websites.map((website) => ({
-					id: website.id.toString('hex'),
-					name: website.name,
-					url: website.url,
-					group_name: website.group_name,
-				}))
-			}
 		}
 
 		response.body = info

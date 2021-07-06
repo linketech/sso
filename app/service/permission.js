@@ -96,13 +96,9 @@ module.exports = class PermissionService extends Service {
 			}
 
 			if (subList && subList.length > 0) {
-				for (let i = 0; i < subList.length; i += 1) {
-					const { id } = subList[i]
-					// eslint-disable-next-line no-await-in-loop
-					await trx('role_has_permission').where({ permission_id: id }).del()
-					// eslint-disable-next-line no-await-in-loop
-					await trx('permission').where({ id }).del()
-				}
+				const subIdList = subList.map(({ id }) => id)
+				await trx('role_has_permission').whereIn('permission_id', subIdList).del()
+				await trx('permission').whereIn('id', subIdList).del()
 			}
 		})
 	}

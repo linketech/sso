@@ -5,7 +5,7 @@ module.exports = class WebstieController extends Controller {
 		const { ctx } = this
 		const { response } = ctx
 
-		const websites = await ctx.service.website.show()
+		const websites = await ctx.service.website.core.show()
 
 		response.body = websites.map((website) => ({
 			id: website.id.toString('hex'),
@@ -17,40 +17,40 @@ module.exports = class WebstieController extends Controller {
 	}
 
 	async create() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			name: {
-				type: 'string',
-				max: 45,
+		ctx.validate({
+			body: {
+				type: 'object',
+				properties: {
+					name: {
+						type: 'string',
+						maxLength: 45,
+					},
+					url: {
+						type: 'string',
+						maxLength: 90,
+					},
+					group_name: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['name', 'url', 'group_name'],
 			},
-			url: {
-				type: 'string',
-				max: 90,
-			},
-			group_name: {
-				type: 'string',
-				max: 45,
-			},
-		}, request.body)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		})
 
 		const { name, url, group_name } = request.body
 
-		const website = await ctx.service.website.getByName(name)
+		const website = await ctx.service.website.core.getByName(name)
 		if (website) {
 			ctx.response.body = { message: '网站名已经存在' }
 			ctx.response.status = 400
 			return
 		}
 
-		const { id } = await ctx.service.website.create({
+		const { id } = await ctx.service.website.core.create({
 			name,
 			url,
 			group_name,
@@ -78,14 +78,14 @@ module.exports = class WebstieController extends Controller {
 
 		const id = Buffer.from(request.query.id, 'hex')
 
-		const website = await ctx.service.website.getById(id)
+		const website = await ctx.service.website.core.getById(id)
 		if (!website) {
 			ctx.response.body = { message: '网站不存在' }
 			ctx.response.status = 400
 			return
 		}
 
-		await ctx.service.website.destroy(id)
+		await ctx.service.website.core.destroy(id)
 
 		response.status = 200
 	}
@@ -131,21 +131,21 @@ module.exports = class WebstieController extends Controller {
 		const id = Buffer.from(request.query.id, 'hex')
 		const { name, url, group_name } = request.body
 
-		const website = await ctx.service.website.getById(id)
+		const website = await ctx.service.website.core.getById(id)
 		if (!website) {
 			ctx.response.body = { message: '网站不存在' }
 			ctx.response.status = 400
 			return
 		}
 
-		const sameNameWebsite = await ctx.service.website.getByName(name)
+		const sameNameWebsite = await ctx.service.website.core.getByName(name)
 		if (sameNameWebsite && !id.equals(sameNameWebsite.id)) {
 			ctx.response.body = { message: '网站名已经存在' }
 			ctx.response.status = 400
 			return
 		}
 
-		await ctx.service.website.update(id, {
+		await ctx.service.website.core.update(id, {
 			name,
 			url,
 			group_name,

@@ -99,6 +99,47 @@ module.exports = class UserController extends Controller {
 		response.status = 200
 	}
 
+	async updateWebSite() {
+		const { ctx } = this
+		const { request, response } = ctx
+
+		ctx.validate({
+			params: {
+				type: 'object',
+				properties: {
+					user_name: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['user_name'],
+			},
+			body: {
+				type: 'array',
+				items: {
+					type: 'object',
+					properties: {
+						name: {
+							type: 'string',
+						},
+						role_name: {
+							type: 'string',
+						},
+					},
+					required: ['name'],
+				},
+				minItems: 1,
+			},
+		})
+
+		const { user_name } = ctx.params
+		const websites = request.body
+
+		await ctx.service.user.updateWebSite(user_name, websites)
+
+		response.status = 200
+	}
+
 	async destroy() {
 		const { ctx, app } = this
 		const { request, response } = ctx

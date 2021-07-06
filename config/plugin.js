@@ -17,6 +17,5 @@ module.exports = {
 	},
 	security: {
 		enable: false,
-		package: 'egg-security',
 	},
 }

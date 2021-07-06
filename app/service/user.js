@@ -254,4 +254,82 @@ module.exports = class UserService extends Service {
 			.leftJoin('role', 'user.role_id', 'role.id')
 		return roles
 	}
+
+	async updateWebSite(user_name, websites) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column('id')
+			.from('user')
+			.where({
+				name: user_name,
+			})
+			.first()
+
+		if (!user) {
+			throw new ServiceError({ message: '用户不存在' })
+		}
+
+		if (!(websites && websites.length > 0)) {
+			throw new ServiceError({ message: '网站集合不能为空' })
+		}
+
+		const newWebsites = []
+
+		for (let i = 0; i < websites.length; i += 1) {
+			const website = websites[0]
+
+			if (website.role_name !== null || website.role_name !== undefined) {
+				// eslint-disable-next-line no-await-in-loop
+				const websiteRole = await knex
+					.select()
+					.column({
+						website_id: 'website.id',
+						website_role_id: 'website_role.id',
+					})
+					.from('website')
+					.leftJoin('website_role', 'website.id', 'website_role.website_id')
+					.where({
+						'website.name': website.name,
+						'website_role.name': website.role_name,
+					})
+					.first()
+				if (!websiteRole) {
+					throw new ServiceError({ message: '网站名或网站内的角色名不存在', value: website })
+				}
+				newWebsites.push(websiteRole)
+			} else {
+				// eslint-disable-next-line no-await-in-loop
+				const websiteRole = await knex
+					.select()
+					.column({
+						website_id: 'id',
+					})
+					.from('website')
+					.where({
+						name: website.name,
+					})
+					.first()
+				if (!websiteRole) {
+					throw new ServiceError({ message: '网站名不存在', value: website })
+				}
+				newWebsites.push({
+					...websiteRole,
+					website_role_id: null,
+				})
+			}
+		}
+
+		await knex.transaction(async (trx) => {
+			await knex('user_has_website').where({
+				user_id: user.id,
+			}).del()
+			await trx('user_has_website').insert(newWebsites.map(({ website_id, website_role_id }) => ({
+				user_id: user.id,
+				website_id,
+				website_role_id,
+			})))
+		})
+	}
 }
