@@ -89,17 +89,7 @@ module.exports = class websiteApiService extends Service {
 		// console.log('updateList', updateList)
 		if (subList.length + addList.length + updateList.length > 0) {
 			await knex.transaction(async (trx) => {
-				// 删除A权限集，及权限和角色的关系
-				if (subList.length > 0) {
-					const subIDList = subList.map(({ id }) => id)
-					await trx('website_role_has_website_permission')
-						.whereIn('website_permission_id', subIDList) // 注意Permission是要属于website的
-						.del()
-					await trx('website_permission')
-						.whereIn('id', subIDList) // 注意Permission是要属于website的
-						.del()
-				}
-				// 新增B权限集，及将新权限分配给admin角色
+				// 新增A权限集，及将新权限分配给admin角色
 				if (addList.length > 0) {
 					const newAddList = addList.map((permission) => ({
 						id: uuid.v1(),
@@ -122,6 +112,16 @@ module.exports = class websiteApiService extends Service {
 							website_permission_id: id,
 						})))
 						.into('website_role_has_website_permission')
+				}
+				// 删除B权限集，及权限和角色的关系
+				if (subList.length > 0) {
+					const subIDList = subList.map(({ id }) => id)
+					await trx('website_role_has_website_permission')
+						.whereIn('website_permission_id', subIDList) // 注意Permission是要属于website的
+						.del()
+					await trx('website_permission')
+						.whereIn('id', subIDList) // 注意Permission是要属于website的
+						.del()
 				}
 				// 更新C权限集，更新关键字外的其它字段(一些备注信息等)
 				if (updateList.length > 0) {
