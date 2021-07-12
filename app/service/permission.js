@@ -58,7 +58,7 @@ module.exports = class PermissionService extends Service {
 		return !!permission
 	}
 
-	async refresh(addList, subList) {
+	async refresh(addList, subList, updateList) {
 		const { knex } = this.app
 
 		await knex.transaction(async (trx) => {
@@ -99,6 +99,17 @@ module.exports = class PermissionService extends Service {
 				const subIdList = subList.map(({ id }) => id)
 				await trx('role_has_permission').whereIn('permission_id', subIdList).del()
 				await trx('permission').whereIn('id', subIdList).del()
+			}
+
+			if (updateList && updateList.length > 0) {
+				await Promise.all(updateList.map((permission) => trx('permission')
+					.where({
+						id: permission.id,
+					})
+					.update({
+						group_name: permission.group_name,
+						description: permission.description,
+					})))
 			}
 		})
 	}

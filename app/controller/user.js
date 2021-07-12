@@ -17,31 +17,29 @@ module.exports = class UserController extends Controller {
 	}
 
 	async update() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
+		ctx.validate({
+			body: {
+				type: 'object',
+				properties: {
+					id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+					role_id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+					disabled: {
+						type: 'integer',
+						enum: [0, 1],
+					},
+				},
+				required: ['id'],
 			},
-			role_id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
-				required: false,
-			},
-			disabled: {
-				type: 'enum',
-				values: [0, 1],
-				required: false,
-			},
-		}, request.body)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		})
 
 		const id = Buffer.from(request.body.id, 'hex')
 		const roleId = request.body.role_id && Buffer.from(request.body.role_id, 'hex')
@@ -141,21 +139,21 @@ module.exports = class UserController extends Controller {
 	}
 
 	async destroy() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
+		ctx.validate({
+			query: {
+				type: 'object',
+				properties: {
+					id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+				},
+				required: ['id'],
 			},
-		}, request.query)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		})
 
 		const id = Buffer.from(request.query.id, 'hex')
 

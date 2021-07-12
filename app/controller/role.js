@@ -14,21 +14,21 @@ module.exports = class UserController extends Controller {
 	}
 
 	async create() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			name: {
-				type: 'string',
-				max: 45,
+		ctx.validate({
+			body: {
+				type: 'object',
+				properties: {
+					name: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['name'],
 			},
-		}, request.body)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		})
 
 		const { name } = request.body
 
@@ -47,21 +47,21 @@ module.exports = class UserController extends Controller {
 	}
 
 	async destroy() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
+		ctx.validate({
+			query: {
+				type: 'object',
+				properties: {
+					id: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['id'],
 			},
-		}, request.query)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		})
 
 		const id = Buffer.from(request.query.id, 'hex')
 

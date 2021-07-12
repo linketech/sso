@@ -15,38 +15,34 @@ module.exports = class PermissionController extends Controller {
 	}
 
 	async update() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
+		ctx.validate({
+			query: {
+				type: 'object',
+				properties: {
+					id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+				},
+				required: ['id'],
 			},
-		}, request.query)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
-
-		const bodyErrors = app.validator.validate({
-			description: {
-				type: 'string',
-				max: 45,
+			body: {
+				type: 'object',
+				properties: {
+					description: {
+						type: 'string',
+						maxLength: 45,
+					},
+					group_name: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
 			},
-			group_name: {
-				type: 'string',
-				max: 45,
-			},
-		}, request.body)
-
-		if (bodyErrors) {
-			response.body = { message: '无效请求参数', errors: bodyErrors }
-			response.status = 400
-			return
-		}
+		})
 
 		const id = Buffer.from(request.query.id, 'hex')
 		const { description, group_name } = request.body

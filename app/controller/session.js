@@ -3,21 +3,21 @@ const { USER: { PASSWORD } } = require('../constant')
 
 module.exports = class SessionController extends Controller {
 	async getfrontendSaltByUsername() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { params, response } = ctx
 
-		const errors = app.validator.validate({
-			username: {
-				type: 'string',
-				max: 45,
+		ctx.validate({
+			params: {
+				type: 'object',
+				properties: {
+					username: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['username'],
 			},
-		}, params)
-
-		if (errors) {
-			ctx.response.body = { message: '无效请求参数', errors }
-			ctx.response.status = 400
-			return
-		}
+		})
 
 		const { username } = params
 
@@ -30,52 +30,64 @@ module.exports = class SessionController extends Controller {
 	}
 
 	async create() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		let errors = app.validator.validate({
-			username: {
-				type: 'string',
-				max: 45,
+		ctx.validate({
+			body: {
+				type: 'object',
+				properties: {
+					username: {
+						type: 'string',
+						maxLength: 45,
+					},
+					type: {
+						type: 'integer',
+						enum: Object.values(PASSWORD),
+					},
+				},
+				required: ['username'],
 			},
-			type: {
-				type: 'integer',
-				enum: Object.keys(PASSWORD),
-				required: false,
-			},
-		}, request.body)
+		})
 
-		if (errors) {
-			ctx.response.body = { message: '无效请求参数', errors }
-			ctx.response.status = 400
-			return
-		}
 		const { username, type = PASSWORD.HASHED } = request.body
 
-		errors = app.validator.validate({
-			password: {
-				type: 'string',
-				format: type === PASSWORD.HASHED ? /^[0-9a-fA-F]{64}$/ : /^\w{1,32}$/,
+		ctx.validate(type === PASSWORD.HASHED ? {
+			body: {
+				type: 'object',
+				properties: {
+					password: {
+						type: 'string',
+						pattern: '^[0-9a-fA-F]{64}$',
+					},
+				},
+				required: ['password'],
 			},
-		}, request.body)
-		if (errors) {
-			ctx.response.body = { message: '无效请求参数', errors }
-			ctx.response.status = 400
-			return
-		}
+		} : {
+			body: {
+				type: 'object',
+				properties: {
+					password: {
+						type: 'string',
+						pattern: '^\\w{1,32}$',
+					},
+				},
+				required: ['password'],
+			},
+		})
 
 		const { password } = request.body
 
 		const user = await ctx.service.user.get(username, password, type)
 
 		if (!user) {
-			ctx.response.body = { message: '账号或密码错误', errors }
+			ctx.response.body = { message: '账号或密码错误' }
 			ctx.response.status = 400
 			return
 		}
 
 		if (user.disabled !== 0) {
-			ctx.response.body = { message: '账号已被停用', errors }
+			ctx.response.body = { message: '账号已被停用' }
 			ctx.response.status = 400
 			return
 		}
@@ -129,49 +141,55 @@ module.exports = class SessionController extends Controller {
 	}
 
 	async userCreate() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		let errors = app.validator.validate({
-			username: {
-				type: 'string',
-				max: 45,
+		ctx.validate({
+			body: {
+				type: 'object',
+				properties: {
+					username: {
+						type: 'string',
+						maxLength: 45,
+					},
+					type: {
+						type: 'integer',
+						enum: Object.values(PASSWORD),
+					},
+				},
+				required: ['username'],
 			},
-			type: {
-				type: 'integer',
-				enum: Object.keys(PASSWORD),
-				required: false,
-			},
-
-		}, ctx.request.body)
-
-		if (errors) {
-			ctx.response.body = { message: '无效请求参数', errors }
-			ctx.response.status = 400
-			return
-		}
+		})
 
 		const { username, type = PASSWORD.HASHED } = request.body
-		errors = app.validator.validate(type === PASSWORD.HASHED ? {
-			password: {
-				type: 'string',
-				format: /^[0-9a-fA-F]{64}$/,
-			},
-			frontendSalt: {
-				type: 'string',
-				format: /^[0-9a-fA-F]{32}$/,
+
+		ctx.validate(type === PASSWORD.HASHED ? {
+			body: {
+				type: 'object',
+				properties: {
+					password: {
+						type: 'string',
+						pattern: '^[0-9a-fA-F]{64}$',
+					},
+					frontendSalt: {
+						type: 'string',
+						pattern: '^[0-9a-fA-F]{32}$',
+					},
+				},
+				required: ['password', 'frontendSalt'],
 			},
 		} : {
-			password: {
-				type: 'string',
-				format: /^\w{1,32}$/,
+			body: {
+				type: 'object',
+				properties: {
+					password: {
+						type: 'string',
+						pattern: '^\\w{1,32}$',
+					},
+				},
+				required: ['password'],
 			},
-		}, request.body)
-		if (errors) {
-			ctx.response.body = { message: '无效请求参数', errors }
-			ctx.response.status = 400
-			return
-		}
+		})
 
 		const { password, frontendSalt } = request.body
 

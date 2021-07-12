@@ -125,9 +125,9 @@ module.exports = class websiteApiService extends Service {
 				}
 				// 更新C权限集，更新关键字外的其它字段(一些备注信息等)
 				if (updateList.length > 0) {
-					await Promise.all(updateList.map((permission) => knex('website_permission')
+					await Promise.all(updateList.map((permission) => trx('website_permission')
 						.where({
-							pattern: permission.id,
+							id: permission.id,
 						})
 						.update({
 							group_name: permission.group_name,
