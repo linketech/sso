@@ -27,6 +27,68 @@ async function genPassword(type, password, frontend_salt) {
 }
 
 module.exports = class UserService extends Service {
+	async getDetailById(id) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column('name')
+			.column('role_id')
+			.from('user')
+			.where({
+				id,
+			})
+			.first()
+
+		const payload = {
+			name: user.name,
+		}
+
+		if (user.role_id) {
+			const role = await knex
+				.select()
+				.column('name')
+				.from('role')
+				.where({
+					id: user.role_id,
+				})
+				.first()
+			if (role) {
+				payload.role = {
+					name: role.name,
+				}
+
+				const permissions = await this.service.permission.getByRoleId(user.role_id)
+				if (permissions && permissions.length > 0) {
+					payload.role.permissions = permissions.map((permission) => ({
+						id: permission.id.toString('hex'),
+						path: permission.path,
+						method: permission.method,
+						description: permission.description,
+						group_name: permission.group_name,
+					}))
+				}
+			}
+		}
+
+		const websites = await knex
+			.select()
+			.column({
+				name: 'website.name',
+				role_name: 'website_role.name',
+			})
+			.from('user_has_website')
+			.leftJoin('website', 'website.id', 'user_has_website.website_id')
+			.leftJoin('website_role', 'website_role.id', 'user_has_website.website_role_id')
+			.where({
+				'user_has_website.user_id': id,
+			})
+		if (websites && websites.length > 0) {
+			payload.websites = websites
+		}
+		return payload
+	}
+
 	/**
 	 * 检查用户名是否存在
 	 * @param {*} name

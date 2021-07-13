@@ -104,32 +104,7 @@ module.exports = class SessionController extends Controller {
 		const { ctx } = this
 		const { response } = ctx
 
-		const { user } = ctx.session
-
-		const info = {
-			user: {
-				name: user.name,
-			},
-		}
-
-		const role = await ctx.service.role.getByUserId(Buffer.from(user.id, 'hex'))
-		if (role) {
-			info.role = {
-				name: role.name,
-			}
-			const permissions = await ctx.service.permission.getByRoleId(role.id)
-			if (permissions && permissions.length > 0) {
-				info.permissions = permissions.map((permission) => ({
-					id: permission.id.toString('hex'),
-					path: permission.path,
-					method: permission.method,
-					description: permission.description,
-					group_name: permission.group_name,
-				}))
-			}
-		}
-
-		response.body = info
+		response.body = await ctx.service.user.getDetailById(Buffer.from(ctx.session.user.id, 'hex'))
 	}
 
 	async destroy() {

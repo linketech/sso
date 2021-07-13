@@ -68,12 +68,12 @@ paths:
         "200":
           description: >
             Successfully authenticated.
-            The session ID is returned in a cookie named `EGG_SESS`. You need to include this cookie in subsequent requests.
+            The session ID is returned in a cookie named `SSO_SESSION`. You need to include this cookie in subsequent requests.
           headers:
             Set-Cookie:
               schema:
                 type: string
-                example: EGG_SESS=abcde12345; Path=/; HttpOnly
+                example: SSO_SESSION=abcde12345; Path=/; HttpOnly
       security: []
     delete:
       tags:
@@ -96,13 +96,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  user:
-                    type: object
-                    description: 用户信息
-                    properties:
-                      name:
-                        type: string
-                        description: 用户名
+                  name:
+                    type: string
+                    description: 用户名
                   role:
                     type: object
                     description: 角色信息
@@ -110,39 +106,33 @@ paths:
                       name:
                         type: string
                         description: 用户名
-                  permission:
-                    type: array
-                    items:
-                      type: object
-                      description: 权限
-                      properties:
-                        id:
-                          type: string
-                        path:
-                          type: string
-                        method:
-                          type: string
-                        description:
-                          type: string
-                        group_name:
-                          type: string
+                      permissions:
+                        type: array
+                        items:
+                          type: object
+                          description: 权限
+                          properties:
+                            id:
+                              type: string
+                            path:
+                              type: string
+                            method:
+                              type: string
+                            description:
+                              type: string
+                            group_name:
+                              type: string
                   website:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:
-                          type: string
-                          description: 网站ID
                         name:
                           type: string
                           description: 网站名
-                        url:
+                        role_name:
                           type: string
-                          description: 网站地址
-                        group_name:
-                          type: string
-                          description: 分组名
+                          description: 给用户分配的网站角色
       security:
         - cookieAuth: []
   /session/user:
@@ -675,7 +665,7 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
-  /website/${website_name}/key:
+  /website/{website_name}/key:
     get:
       tags:
         - 网站
@@ -748,7 +738,7 @@ paths:
                       description: 网站密钥或公钥ID
       security:
         - cookieAuth: []
-  /website/${website_name}/key/${key_id}:
+  /website/{website_name}/key/{key_id}:
     delete:
       tags:
         - 网站
@@ -769,7 +759,7 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
-  /website/${website_name}/role:
+  /website/{website_name}/role:
     get:
       tags:
         - 网站
@@ -837,7 +827,7 @@ paths:
                       description: 网站角色ID
       security:
         - cookieAuth: []
-  /website/${website_name}/role/${role_id}:
+  /website/{website_name}/role/{role_id}:
     delete:
       tags:
         - 网站
@@ -897,7 +887,7 @@ paths:
                       description: 网站角色ID
       security:
         - cookieAuth: []
-  /website/${website_name}/permission:
+  /website/{website_name}/permission:
     get:
       tags:
         - 网站
@@ -977,7 +967,7 @@ paths:
                       description: 网站权限ID
       security:
         - cookieAuth: []
-  /website/${website_name}/permission/${permission_id}:
+  /website/{website_name}/permission/{permission_id}:
     delete:
       tags:
         - 网站
@@ -1035,7 +1025,7 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
-  /website/{website_name}/role/${role_name}/permission:
+  /website/{website_name}/role/{role_name}/permission:
     get:
       tags:
         - 网站
