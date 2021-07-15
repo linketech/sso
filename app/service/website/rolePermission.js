@@ -30,7 +30,7 @@ module.exports = class RoleService extends WebstieBaseService {
 			.column('id')
 			.from('website_permission')
 			.where('website_id', website_id)
-			.whereIn('id', permissionIDList)
+			.whereIn('id', permissionIDList.map(({ id }) => Buffer.from(id, 'hex')))
 
 		const permissionMap = websitePermissionList.reduce((previousValue, currentValue) => {
 			// eslint-disable-next-line no-param-reassign
