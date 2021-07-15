@@ -61,15 +61,17 @@ module.exports = {
 			knexClient.on('query', (query) => {
 				// eslint-disable-next-line no-underscore-dangle
 				const uid = query.__knexQueryUid
-				times[uid] = {
-					position: count,
-					query,
-					startTime: Date.now(),
-					// I keep track of when a query is finished with a boolean instead of
-					// presence of an end time. It makes the logic easier to read.
-					finished: false,
+				if (uid) {
+					times[uid] = {
+						position: count,
+						query,
+						startTime: Date.now(),
+						// I keep track of when a query is finished with a boolean instead of
+						// presence of an end time. It makes the logic easier to read.
+						finished: false,
+					}
+					count += 1
 				}
-				count += 1
 			}).on('query-response', (response, query) => {
 				// eslint-disable-next-line no-underscore-dangle
 				const uid = query.__knexQueryUid
