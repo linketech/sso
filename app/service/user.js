@@ -314,7 +314,55 @@ module.exports = class UserService extends Service {
 			.column('role.name as role_name')
 			.from('user')
 			.leftJoin('role', 'user.role_id', 'role.id')
-		return roles
+
+		return roles.map(({ id, name, disabled, role_id, role_name }) => ({
+			id: id.toString('hex'),
+			name,
+			disabled,
+			role_id: role_id && role_id.toString('hex'),
+			role_name,
+		}))
+	}
+
+	async getDetailByName(user_name) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column('user.id as id')
+			.column('user.name as name')
+			.column('user.disabled as disabled')
+			.column('role.name as role_name')
+			.from('user')
+			.leftJoin('role', 'user.role_id', 'role.id')
+			.where({
+				'user.name': user_name,
+			})
+			.first()
+
+		if (!user) {
+			throw new ServiceError({ message: '用户不存在' })
+		}
+
+		const websites = await knex
+			.select()
+			.column({
+				name: 'website.name',
+				role_name: 'website_role.name',
+			})
+			.from('user_has_website')
+			.leftJoin('website', 'website.id', 'user_has_website.website_id')
+			.leftJoin('website_role', 'website_role.id', 'user_has_website.website_role_id')
+			.where({
+				'user_has_website.user_id': user.id,
+			})
+
+		return {
+			name: user.name,
+			disabled: user.disabled,
+			role_name: user.role_name,
+			websites,
+		}
 	}
 
 	async updateWebSite(user_name, websites) {

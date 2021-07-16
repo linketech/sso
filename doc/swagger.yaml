@@ -331,6 +331,49 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
+  /user/{user_name}:
+    get:
+      tags:
+        - 用户
+      summary: 获取用户详细信息
+      description: 获取用户详细信息
+      parameters:
+        - name: user_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: 用户名
+                  disabled:
+                    type: string
+                    description: 是否被停用
+                  role_name:
+                    type: string
+                    description: 权限组名
+                  websites:
+                    type: array
+                    description: 分配的网站信息
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: 网站名
+                        role_name:
+                          type: string
+                          description: 网站角色名
+      security:
+        - cookieAuth: []
   /user/password/reset:
     put:
       tags:

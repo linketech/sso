@@ -5,15 +5,29 @@ module.exports = class UserController extends Controller {
 		const { ctx } = this
 		const { response } = ctx
 
-		const users = await ctx.service.user.list()
+		response.body = await ctx.service.user.list()
+	}
 
-		response.body = users.map(({ id, name, disabled, role_id, role_name }) => ({
-			id: id.toString('hex'),
-			name,
-			disabled,
-			role_id: role_id && role_id.toString('hex'),
-			role_name,
-		}))
+	async getDetail() {
+		const { ctx } = this
+		const { response } = ctx
+
+		ctx.validate({
+			params: {
+				type: 'object',
+				properties: {
+					user_name: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['user_name'],
+			},
+		})
+
+		const { user_name } = ctx.params
+
+		response.body = await ctx.service.user.getDetailByName(user_name)
 	}
 
 	async update() {
