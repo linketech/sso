@@ -870,7 +870,7 @@ paths:
                       description: 网站角色ID
       security:
         - cookieAuth: []
-  /website/{website_name}/role/{role_id}:
+  /website/{website_name}/role/{role_name}:
     delete:
       tags:
         - 网站
@@ -881,7 +881,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: role_id
+        - name: role_name
           in: path
           required: true
           schema:
