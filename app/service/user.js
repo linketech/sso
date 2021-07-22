@@ -5,7 +5,7 @@ const argon2 = require('argon2')
 const { sha256 } = require('../util/crypto')
 const uuid = require('../util/uuid')
 const ServiceError = require('../util/ServiceError')
-const { USER: { PASSWORD } } = require('../constant')
+const { USER: { DEFAULT_PASSWORD, PASSWORD } } = require('../constant')
 
 async function checkPassword(type, hash_password, password, frontend_salt) {
 	const beforeHashedPassword = type === PASSWORD.NO_HASHED
@@ -98,10 +98,13 @@ module.exports = class UserService extends Service {
 
 		const user = await knex
 			.select()
-			.column('id')
 			.from('user')
 			.where({ name })
 			.first()
+
+		if (!user) {
+			throw new ServiceError({ message: '用户名不存在' })
+		}
 
 		return user
 	}
@@ -115,10 +118,13 @@ module.exports = class UserService extends Service {
 
 		const user = await knex
 			.select()
-			.column('name')
 			.from('user')
 			.where({ id })
 			.first()
+
+		if (!user) {
+			throw new ServiceError({ message: '用户ID不存在' })
+		}
 
 		return user
 	}
@@ -148,6 +154,10 @@ module.exports = class UserService extends Service {
 	 */
 	async create(name, password, frontendSalt, role_id = null) {
 		const { knex } = this.app
+
+		if (await this.checkIfExistByName(name)) {
+			throw new ServiceError({ message: '用户名已经存在' })
+		}
 
 		let type
 		let frontend_salt
@@ -182,6 +192,8 @@ module.exports = class UserService extends Service {
 	 */
 	async destroy(id) {
 		const { knex } = this.app
+
+		await this.getById(id)
 
 		await knex('user')
 			.where({ id })
@@ -242,6 +254,9 @@ module.exports = class UserService extends Service {
 
 	async updateRole(id, { role_id: roleId, disabled }) {
 		const { knex } = this.app
+
+		await this.getById(id)
+
 		await knex
 			.update({
 				role_id: roleId,
@@ -294,7 +309,7 @@ module.exports = class UserService extends Service {
 			throw new ServiceError({ message: '用户不存在' })
 		}
 
-		const hash_password = await genPassword(PASSWORD.NO_HASHED, '12345678', user.frontend_salt)
+		const hash_password = await genPassword(PASSWORD.NO_HASHED, DEFAULT_PASSWORD, user.frontend_salt)
 
 		await knex('user')
 			.update({
@@ -324,24 +339,14 @@ module.exports = class UserService extends Service {
 		}))
 	}
 
-	async getDetailByName(user_name) {
+	async getDetailByName(name) {
 		const { knex } = this.app
 
-		const user = await knex
-			.select()
-			.column('user.id as id')
-			.column('user.name as name')
-			.column('user.disabled as disabled')
-			.column('role.name as role_name')
-			.from('user')
-			.leftJoin('role', 'user.role_id', 'role.id')
-			.where({
-				'user.name': user_name,
-			})
-			.first()
+		const user = await this.getByName(name)
 
-		if (!user) {
-			throw new ServiceError({ message: '用户不存在' })
+		let role
+		if (user.role_id) {
+			role = await this.service.role.getById(user.role_id)
 		}
 
 		const websites = await knex
@@ -358,28 +363,17 @@ module.exports = class UserService extends Service {
 			})
 
 		return {
-			name: user.name,
+			name,
 			disabled: user.disabled,
-			role_name: user.role_name,
+			role_name: role && role.name,
 			websites,
 		}
 	}
 
-	async updateWebSite(user_name, websites) {
+	async updateWebSite(name, websites) {
 		const { knex } = this.app
 
-		const user = await knex
-			.select()
-			.column('id')
-			.from('user')
-			.where({
-				name: user_name,
-			})
-			.first()
-
-		if (!user) {
-			throw new ServiceError({ message: '用户不存在' })
-		}
+		const user = await this.getByName(name)
 
 		if (!(websites && websites.length > 0)) {
 			throw new ServiceError({ message: '网站集合不能为空' })

@@ -168,13 +168,6 @@ module.exports = class SessionController extends Controller {
 
 		const { password, frontendSalt } = request.body
 
-		const user = await ctx.service.user.getByName(username)
-		if (user) {
-			ctx.response.body = { message: '用户名已经存在' }
-			ctx.response.status = 400
-			return
-		}
-
 		await ctx.service.user.create(username, password, frontendSalt)
 
 		response.status = 200

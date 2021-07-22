@@ -1,8 +1,13 @@
 module.exports = {
 	USER: {
+		DEFAULT_PASSWORD: '11111111',
 		PASSWORD: {
 			NO_HASHED: 0,
 			HASHED: 1,
+		},
+		DISABLED: {
+			TRUE: 1,
+			FALSE: 0,
 		},
 	},
 	PUBLIC_KEY: {

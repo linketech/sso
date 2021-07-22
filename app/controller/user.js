@@ -1,5 +1,7 @@
 const { Controller } = require('egg')
 
+const { USER: { DISABLED } } = require('../constant')
+
 module.exports = class UserController extends Controller {
 	async index() {
 		const { ctx } = this
@@ -48,7 +50,7 @@ module.exports = class UserController extends Controller {
 					},
 					disabled: {
 						type: 'integer',
-						enum: [0, 1],
+						enum: Object.values(DISABLED),
 					},
 				},
 				required: ['id'],
@@ -58,13 +60,6 @@ module.exports = class UserController extends Controller {
 		const id = Buffer.from(request.body.id, 'hex')
 		const roleId = request.body.role_id && Buffer.from(request.body.role_id, 'hex')
 		const { disabled } = request.body
-
-		const user = await ctx.service.user.getById(id)
-		if (!user) {
-			response.body = { message: '用户不存在' }
-			response.status = 400
-			return
-		}
 
 		const newRole = {}
 
@@ -170,13 +165,6 @@ module.exports = class UserController extends Controller {
 		})
 
 		const id = Buffer.from(request.query.id, 'hex')
-
-		const user = await ctx.service.user.getById(id)
-		if (!user) {
-			ctx.response.body = { message: '用户不存在' }
-			ctx.response.status = 400
-			return
-		}
 
 		await ctx.service.user.destroy(id)
 

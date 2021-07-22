@@ -1,5 +1,6 @@
 const { Service } = require('egg')
 
+const ServiceError = require('../util/ServiceError')
 const uuid = require('../util/uuid')
 
 module.exports = class RoleService extends Service {
@@ -8,10 +9,13 @@ module.exports = class RoleService extends Service {
 
 		const role = await knex
 			.select()
-			.column('id')
 			.from('role')
 			.where({ name })
 			.first()
+
+		if (!role) {
+			throw new ServiceError({ message: '角色名不存在' })
+		}
 
 		return role
 	}
@@ -19,15 +23,17 @@ module.exports = class RoleService extends Service {
 	async getById(id) {
 		const { knex } = this.app
 
-		const root = await knex
+		const role = await knex
 			.select()
-			.column('id')
-			.column('name')
 			.from('role')
 			.where({ id })
 			.first()
 
-		return root
+		if (!role) {
+			throw new ServiceError({ message: '角色ID不存在' })
+		}
+
+		return role
 	}
 
 	async getByUserId(user_id) {
