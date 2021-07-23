@@ -732,8 +732,8 @@ paths:
                     id:
                       type: string
                       description: 网站密钥或公钥ID
-                    algorithm:
-                      $ref: "#/components/schemas/algorithm"
+                    algorithm_name:
+                      $ref: "#/components/schemas/algorithm_name"
                     key:
                       type: string
                       description: 网站密钥或公钥
@@ -759,14 +759,14 @@ paths:
             schema:
               type: object
               properties:
-                algorithm:
-                  $ref: "#/components/schemas/algorithm"
+                algorithm_name:
+                  $ref: "#/components/schemas/algorithm_name"
                 key:
                   type: string
                   description: 网站密钥或公钥
                   maxLength: 65535
               required:
-                - algorithm
+                - algorithm_name
                 - key
       responses:
         "200":
@@ -781,7 +781,7 @@ paths:
                       description: 网站密钥或公钥ID
       security:
         - cookieAuth: []
-  /website/{website_name}/key/{key_id}:
+  /website/{website_name}/key/{algorithm_name}:
     delete:
       tags:
         - 网站
@@ -792,7 +792,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: key_id
+        - name: algorithm_name
           in: path
           required: true
           schema:
@@ -1229,7 +1229,7 @@ paths:
         - websiteAuth: []
 components:
   schemas:
-    algorithm:
+    algorithm_name:
       type: string
       enum: [HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512, PS256, PS384]
   securitySchemes:
