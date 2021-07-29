@@ -8,7 +8,7 @@ const permissionFilter = require('./permissionFilter')
 module.exports = ({ router, controller }) => {
 	const subRouter = router.namespace('/api')
 
-	subRouter.get('', controller.home.index)
+	subRouter.get('/', controller.home.index)
 
 	subRouter.get('/session/frontend_salt/:username', controller.session.getfrontendSaltByUsername)
 	subRouter.post('/session', controller.session.create)
@@ -43,8 +43,8 @@ module.exports = ({ router, controller }) => {
 	 */
 	subRouter.get('/website', loginFilter, permissionFilter('查看所有', '网站'), controller.website.core.index)
 	subRouter.post('/website', loginFilter, permissionFilter('创建', '网站'), controller.website.core.create)
-	subRouter.delete('/website', loginFilter, permissionFilter('删除', '网站'), controller.website.core.destroy)
-	subRouter.put('/website', loginFilter, permissionFilter('更新', '网站'), controller.website.core.update)
+	subRouter.delete('/website/:website_name', loginFilter, permissionFilter('删除', '网站'), controller.website.core.destroy)
+	subRouter.put('/website/:website_name', loginFilter, permissionFilter('更新', '网站'), controller.website.core.update)
 	subRouter.get('/website/:website_name/key', loginFilter, permissionFilter('查看所有', '网站密钥或公钥'), controller.website.key.index)
 	subRouter.post('/website/:website_name/key', loginFilter, permissionFilter('创建', '网站密钥或公钥'), controller.website.key.create)
 	subRouter.delete('/website/:website_name/key/:algorithm_name', loginFilter, permissionFilter('删除', '网站密钥或公钥'), controller.website.key.destroy)

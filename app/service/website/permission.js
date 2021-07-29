@@ -137,10 +137,17 @@ module.exports = class RoleService extends WebstieBaseService {
 			throw new ServiceError({ message: '指定网站不存在指定权限ID' })
 		}
 
-		await knex('website_permission')
-			.where({
-				id: websitePermission.id,
-			})
-			.del()
+		await knex.transaction(async (trx) => {
+			await trx('website_role_has_website_permission')
+				.where({
+					website_permission_id: websitePermission.id,
+				})
+				.del()
+			await trx('website_permission')
+				.where({
+					id: websitePermission.id,
+				})
+				.del()
+		})
 	}
 }

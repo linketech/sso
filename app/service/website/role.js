@@ -104,11 +104,23 @@ module.exports = class RoleService extends Service {
 			throw new ServiceError({ message: '指定网站名的角色名不存在' })
 		}
 
-		await knex('website_role')
-			.where({
-				id: websiteRole.id,
-			})
-			.del()
+		await knex.transaction(async (trx) => {
+			await trx('user_has_website')
+				.where({
+					website_role_id: websiteRole.id,
+				})
+				.del()
+			await trx('website_role_has_website_permission')
+				.where({
+					website_role_id: websiteRole.id,
+				})
+				.del()
+			await trx('website_role')
+				.where({
+					id: websiteRole.id,
+				})
+				.del()
+		})
 	}
 
 	async update(website_name, role_name, new_role_name) {

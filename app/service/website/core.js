@@ -1,5 +1,7 @@
 const { Service } = require('egg')
 
+const ServiceError = require('../../util/ServiceError')
+
 const uuid = require('../../util/uuid')
 
 module.exports = class WebsiteService extends Service {
@@ -75,23 +77,92 @@ module.exports = class WebsiteService extends Service {
 		return { id }
 	}
 
-	async destroy(id) {
+	async destroy(name) {
 		const { knex } = this.app
 
-		await knex('website')
-			.where({ id })
-			.del()
+		const website = await knex
+			.select()
+			.column('id')
+			.from('website')
+			.where({
+				name,
+			})
+			.first()
+		if (!website) {
+			throw new ServiceError({ message: '指定的网站名不存在' })
+		}
+
+		await knex.transaction(async (trx) => {
+			await trx('user_has_website')
+				.where({
+					website_id: website.id,
+				})
+				.del()
+			await trx('website_role_has_website_permission')
+				.whereIn('website_role_id', trx.select('id').from('website_role').where({
+					website_id: website.id,
+				}))
+				.orWhereIn('website_permission_id', trx.select('id').from('website_permission').where({
+					website_id: website.id,
+				}))
+				.del()
+			await trx('website_role')
+				.where({
+					website_id: website.id,
+				})
+				.del()
+			await trx('website_permission')
+				.where({
+					website_id: website.id,
+				})
+				.del()
+			await trx('website')
+				.where({
+					id: website.id,
+				})
+				.del()
+		})
 	}
 
-	async update(id, { name, url, group_name }) {
+	async update(name, newWebsite) {
 		const { knex } = this.app
+
+		const website = await knex
+			.select()
+			.column('id')
+			.from('website')
+			.where({
+				name,
+			})
+			.first()
+		if (!website) {
+			throw new ServiceError({ message: '指定的网站名不存在' })
+		}
+
+		const sameNameWebsite = await knex
+			.select()
+			.column('id')
+			.from('website')
+			.where({
+				name,
+			})
+			.whereNot({
+				id: website.id,
+			})
+			.first()
+		if (sameNameWebsite) {
+			throw new ServiceError({ message: '指定的网站名已经存在' })
+		}
+
 		await knex
 			.update({
-				name,
-				url,
-				group_name,
+				name: newWebsite.name,
+				url: newWebsite.url,
+				group_name: newWebsite.group_name,
 			})
 			.table('website')
-			.where({ id })
+			.where({
+				id: website.id,
+			})
 	}
 }

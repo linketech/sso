@@ -659,16 +659,18 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
+  /website/{website_name}:
     put:
       tags:
         - 网站
       summary: 修改网站
       parameters:
-        - name: id
-          in: query
+        - name: website_name
+          description: 网站名
+          in: path
+          required: true
           schema:
             type: string
-            description: 网站ID
       requestBody:
         content:
           application/json:
@@ -698,11 +700,12 @@ paths:
         - 网站
       summary: 删除网站
       parameters:
-        - name: id
-          in: query
+        - name: website_name
+          description: 网站名
+          in: path
+          required: true
           schema:
             type: string
-            description: 网站ID
       responses:
         "200":
           description: 请求成功
@@ -715,6 +718,7 @@ paths:
       summary: 查看指定网站的所有公钥
       parameters:
         - name: website_name
+          description: 网站名
           in: path
           required: true
           schema:
