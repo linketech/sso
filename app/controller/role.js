@@ -32,18 +32,7 @@ module.exports = class UserController extends Controller {
 
 		const { name } = request.body
 
-		const role = await ctx.service.role.getByName(name)
-		if (role) {
-			ctx.response.body = { message: '权限组名已经存在' }
-			ctx.response.status = 400
-			return
-		}
-
-		const { id } = await ctx.service.role.create(name)
-
-		response.body = {
-			id: id.toString('hex').toUpperCase(),
-		}
+		response.body = await ctx.service.role.create(name)
 	}
 
 	async destroy() {
@@ -63,16 +52,7 @@ module.exports = class UserController extends Controller {
 			},
 		})
 
-		const id = Buffer.from(request.query.id, 'hex')
-
-		const role = await ctx.service.role.getById(id)
-		if (!role) {
-			ctx.response.body = { message: '权限组不存在' }
-			ctx.response.status = 400
-			return
-		}
-
-		await ctx.service.role.destroy(id)
+		await ctx.service.role.destroy(request.query.id)
 
 		response.status = 200
 	}

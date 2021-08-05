@@ -10,7 +10,7 @@
     "@koa/cors": "^3.1.0",
     "@z-ivan/koa-logger": "^0.0.5",
     "ajv": "^8.6.2",
-    "ajv-i18n": "^4.0.0",
+    "ajv-i18n": "^4.0.1",
     "argon2": "^0.28.2",
     "egg": "^2.29.4",
     "egg-redis": "^2.4.0",
@@ -19,13 +19,13 @@
     "egg-session-redis": "^2.1.0",
     "egg-validate": "^2.0.2",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.95.8",
+    "knex": "^0.95.9",
     "mysql": "^2.18.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "egg-bin": "^4.16.4",
-    "eslint": "^7.31.0",
+    "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.4"
   },
