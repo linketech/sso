@@ -164,9 +164,7 @@ module.exports = class UserController extends Controller {
 			},
 		})
 
-		const id = Buffer.from(request.query.id, 'hex')
-
-		await ctx.service.user.destroy(id)
+		await ctx.service.user.destroy(Buffer.from(request.query.id, 'hex'))
 
 		response.status = 200
 	}

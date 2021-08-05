@@ -129,6 +129,19 @@ module.exports = class UserService extends Service {
 		return user
 	}
 
+	async checkExistById(id) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column(knex.raw('1'))
+			.from('user')
+			.where({ id })
+			.first()
+
+		return !!user
+	}
+
 	/**
 	 * 检查用户名是否存在
 	 * @param {*} name
@@ -193,11 +206,15 @@ module.exports = class UserService extends Service {
 	async destroy(id) {
 		const { knex } = this.app
 
-		await this.getById(id)
+		const exists = this.checkExistById(id)
+		if (!exists) {
+			throw new ServiceError({ message: '用户ID不存在' })
+		}
 
-		await knex('user')
-			.where({ id })
-			.del()
+		await knex.transaction(async (trx) => {
+			await trx('user_has_website').where({ user_id: id }).del()
+			await trx('user').where({ id }).del()
+		})
 	}
 
 	/**
