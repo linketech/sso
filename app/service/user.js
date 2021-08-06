@@ -2,7 +2,7 @@ const { Service } = require('egg')
 const crypto = require('crypto')
 
 const argon2 = require('argon2')
-const { sha256 } = require('../util/crypto')
+const { sha256, md5 } = require('../util/crypto')
 const uuid = require('../util/uuid')
 const ServiceError = require('../util/ServiceError')
 const { USER: { DEFAULT_PASSWORD, PASSWORD } } = require('../constant')
@@ -265,8 +265,10 @@ module.exports = class UserService extends Service {
 			.from('user')
 			.where({ name })
 			.first()
-
-		return user && user.frontend_salt
+		if (user && user.frontend_salt) {
+			return user.frontend_salt.toString('hex')
+		}
+		return md5(name).toString('hex')
 	}
 
 	async updateRole(id, { role_id: roleId, disabled }) {
