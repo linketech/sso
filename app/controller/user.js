@@ -1,58 +1,65 @@
 const { Controller } = require('egg')
 
+const { USER: { DISABLED } } = require('../constant')
+
 module.exports = class UserController extends Controller {
 	async index() {
 		const { ctx } = this
 		const { response } = ctx
 
-		const users = await ctx.service.user.list()
+		response.body = await ctx.service.user.list()
+	}
 
-		response.body = users.map(({ id, name, disabled, role_id, role_name }) => ({
-			id: id.toString('hex'),
-			name,
-			disabled,
-			role_id: role_id && role_id.toString('hex'),
-			role_name,
-		}))
+	async getDetail() {
+		const { ctx } = this
+		const { response } = ctx
+
+		ctx.validate({
+			params: {
+				type: 'object',
+				properties: {
+					user_name: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['user_name'],
+			},
+		})
+
+		const { user_name } = ctx.params
+
+		response.body = await ctx.service.user.getDetailByName(user_name)
 	}
 
 	async update() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
+		ctx.validate({
+			body: {
+				type: 'object',
+				properties: {
+					id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+					role_id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+					disabled: {
+						type: 'integer',
+						enum: Object.values(DISABLED),
+					},
+				},
+				required: ['id'],
 			},
-			role_id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
-				required: false,
-			},
-			disabled: {
-				type: 'enum',
-				values: [0, 1],
-				required: false,
-			},
-		}, request.body)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		})
 
 		const id = Buffer.from(request.body.id, 'hex')
 		const roleId = request.body.role_id && Buffer.from(request.body.role_id, 'hex')
 		const { disabled } = request.body
-
-		const user = await ctx.service.user.getById(id)
-		if (!user) {
-			response.body = { message: '用户不存在' }
-			response.status = 400
-			return
-		}
 
 		const newRole = {}
 
@@ -99,33 +106,65 @@ module.exports = class UserController extends Controller {
 		response.status = 200
 	}
 
-	async destroy() {
-		const { ctx, app } = this
+	async updateWebSite() {
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
+		ctx.validate({
+			params: {
+				type: 'object',
+				properties: {
+					user_name: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['user_name'],
 			},
-		}, request.query)
+			body: {
+				type: 'array',
+				items: {
+					type: 'object',
+					properties: {
+						name: {
+							type: 'string',
+						},
+						role_name: {
+							type: 'string',
+						},
+					},
+					required: ['name'],
+				},
+				minItems: 1,
+			},
+		})
 
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		const { user_name } = ctx.params
+		const websites = request.body
 
-		const id = Buffer.from(request.query.id, 'hex')
+		await ctx.service.user.updateWebSite(user_name, websites)
 
-		const user = await ctx.service.user.getById(id)
-		if (!user) {
-			ctx.response.body = { message: '用户不存在' }
-			ctx.response.status = 400
-			return
-		}
+		response.status = 200
+	}
 
-		await ctx.service.user.destroy(id)
+	async destroy() {
+		const { ctx } = this
+		const { request, response } = ctx
+
+		ctx.validate({
+			query: {
+				type: 'object',
+				properties: {
+					id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+				},
+				required: ['id'],
+			},
+		})
+
+		await ctx.service.user.destroy(Buffer.from(request.query.id, 'hex'))
 
 		response.status = 200
 	}

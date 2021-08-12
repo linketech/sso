@@ -2,27 +2,24 @@ const { Controller } = require('egg')
 
 module.exports = class RolePermissionController extends Controller {
 	async index() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			role_id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
-				required: false,
+		ctx.validate({
+			query: {
+				type: 'object',
+				properties: {
+					role_id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+					permission_id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+				},
 			},
-			permission_id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
-				required: false,
-			},
-		}, request.query)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		})
 
 		const role_id = request.query.role_id && Buffer.from(request.query.role_id, 'hex')
 		const permission_id = request.query.permission_id && Buffer.from(request.query.permission_id, 'hex')
@@ -41,28 +38,27 @@ module.exports = class RolePermissionController extends Controller {
 	}
 
 	async update() {
-		const { ctx, app } = this
+		const { ctx } = this
 		const { request, response } = ctx
 
-		const errors = app.validator.validate({
-			role_id: {
-				type: 'string',
-				format: /^[0-9A-Fa-f]{32}$/,
-			},
-			permission_id_list: {
-				type: 'array',
-				itemType: 'string',
-				rule: {
-					format: /^[0-9A-Fa-f]{32}$/,
+		ctx.validate({
+			query: {
+				type: 'object',
+				properties: {
+					role_id: {
+						type: 'string',
+						pattern: '^[0-9A-Fa-f]{32}$',
+					},
+					permission_id_list: {
+						type: 'array',
+						items: {
+							type: 'string',
+							pattern: '^[0-9A-Fa-f]{32}$',
+						},
+					},
 				},
 			},
-		}, request.body)
-
-		if (errors) {
-			response.body = { message: '无效请求参数', errors }
-			response.status = 400
-			return
-		}
+		})
 
 		const role_id = Buffer.from(request.body.role_id, 'hex')
 		const permission_id_list = request.body.permission_id_list.map((id) => Buffer.from(id, 'hex'))

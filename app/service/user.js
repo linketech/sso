@@ -2,10 +2,10 @@ const { Service } = require('egg')
 const crypto = require('crypto')
 
 const argon2 = require('argon2')
-const { sha256 } = require('../util/crypto')
+const { sha256, md5 } = require('../util/crypto')
 const uuid = require('../util/uuid')
 const ServiceError = require('../util/ServiceError')
-const { USER: { PASSWORD } } = require('../constant')
+const { USER: { DEFAULT_PASSWORD, PASSWORD } } = require('../constant')
 
 async function checkPassword(type, hash_password, password, frontend_salt) {
 	const beforeHashedPassword = type === PASSWORD.NO_HASHED
@@ -27,6 +27,68 @@ async function genPassword(type, password, frontend_salt) {
 }
 
 module.exports = class UserService extends Service {
+	async getDetailById(id) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column('name')
+			.column('role_id')
+			.from('user')
+			.where({
+				id,
+			})
+			.first()
+
+		const payload = {
+			name: user.name,
+		}
+
+		if (user.role_id) {
+			const role = await knex
+				.select()
+				.column('name')
+				.from('role')
+				.where({
+					id: user.role_id,
+				})
+				.first()
+			if (role) {
+				payload.role = {
+					name: role.name,
+				}
+
+				const permissions = await this.service.permission.getByRoleId(user.role_id)
+				if (permissions && permissions.length > 0) {
+					payload.role.permissions = permissions.map((permission) => ({
+						id: permission.id.toString('hex'),
+						path: permission.path,
+						method: permission.method,
+						description: permission.description,
+						group_name: permission.group_name,
+					}))
+				}
+			}
+		}
+
+		const websites = await knex
+			.select()
+			.column({
+				name: 'website.name',
+				role_name: 'website_role.name',
+			})
+			.from('user_has_website')
+			.leftJoin('website', 'website.id', 'user_has_website.website_id')
+			.leftJoin('website_role', 'website_role.id', 'user_has_website.website_role_id')
+			.where({
+				'user_has_website.user_id': id,
+			})
+		if (websites && websites.length > 0) {
+			payload.websites = websites
+		}
+		return payload
+	}
+
 	/**
 	 * 检查用户名是否存在
 	 * @param {*} name
@@ -36,10 +98,13 @@ module.exports = class UserService extends Service {
 
 		const user = await knex
 			.select()
-			.column('id')
 			.from('user')
 			.where({ name })
 			.first()
+
+		if (!user) {
+			throw new ServiceError({ message: '用户名不存在' })
+		}
 
 		return user
 	}
@@ -53,12 +118,28 @@ module.exports = class UserService extends Service {
 
 		const user = await knex
 			.select()
-			.column('name')
 			.from('user')
 			.where({ id })
 			.first()
 
+		if (!user) {
+			throw new ServiceError({ message: '用户ID不存在' })
+		}
+
 		return user
+	}
+
+	async checkExistById(id) {
+		const { knex } = this.app
+
+		const user = await knex
+			.select()
+			.column(knex.raw('1'))
+			.from('user')
+			.where({ id })
+			.first()
+
+		return !!user
 	}
 
 	/**
@@ -86,6 +167,10 @@ module.exports = class UserService extends Service {
 	 */
 	async create(name, password, frontendSalt, role_id = null) {
 		const { knex } = this.app
+
+		if (await this.checkIfExistByName(name)) {
+			throw new ServiceError({ message: '用户名已经存在' })
+		}
 
 		let type
 		let frontend_salt
@@ -121,9 +206,15 @@ module.exports = class UserService extends Service {
 	async destroy(id) {
 		const { knex } = this.app
 
-		await knex('user')
-			.where({ id })
-			.del()
+		const exists = this.checkExistById(id)
+		if (!exists) {
+			throw new ServiceError({ message: '用户ID不存在' })
+		}
+
+		await knex.transaction(async (trx) => {
+			await trx('user_has_website').where({ user_id: id }).del()
+			await trx('user').where({ id }).del()
+		})
 	}
 
 	/**
@@ -174,12 +265,17 @@ module.exports = class UserService extends Service {
 			.from('user')
 			.where({ name })
 			.first()
-
-		return user && user.frontend_salt
+		if (user && user.frontend_salt) {
+			return user.frontend_salt.toString('hex')
+		}
+		return md5(name).toString('hex')
 	}
 
 	async updateRole(id, { role_id: roleId, disabled }) {
 		const { knex } = this.app
+
+		await this.getById(id)
+
 		await knex
 			.update({
 				role_id: roleId,
@@ -232,7 +328,7 @@ module.exports = class UserService extends Service {
 			throw new ServiceError({ message: '用户不存在' })
 		}
 
-		const hash_password = await genPassword(PASSWORD.NO_HASHED, '12345678', user.frontend_salt)
+		const hash_password = await genPassword(PASSWORD.NO_HASHED, DEFAULT_PASSWORD, user.frontend_salt)
 
 		await knex('user')
 			.update({
@@ -252,6 +348,111 @@ module.exports = class UserService extends Service {
 			.column('role.name as role_name')
 			.from('user')
 			.leftJoin('role', 'user.role_id', 'role.id')
-		return roles
+
+		return roles.map(({ id, name, disabled, role_id, role_name }) => ({
+			id: id.toString('hex'),
+			name,
+			disabled,
+			role_id: role_id && role_id.toString('hex'),
+			role_name,
+		}))
+	}
+
+	async getDetailByName(name) {
+		const { knex } = this.app
+
+		const user = await this.getByName(name)
+
+		let role
+		if (user.role_id) {
+			role = await this.service.role.getById(user.role_id)
+		}
+
+		const websites = await knex
+			.select()
+			.column({
+				name: 'website.name',
+				role_name: 'website_role.name',
+			})
+			.from('user_has_website')
+			.leftJoin('website', 'website.id', 'user_has_website.website_id')
+			.leftJoin('website_role', 'website_role.id', 'user_has_website.website_role_id')
+			.where({
+				'user_has_website.user_id': user.id,
+			})
+
+		return {
+			name,
+			disabled: user.disabled,
+			role_name: role && role.name,
+			websites,
+		}
+	}
+
+	async updateWebSite(name, websites) {
+		const { knex } = this.app
+
+		const user = await this.getByName(name)
+
+		if (!(websites && websites.length > 0)) {
+			throw new ServiceError({ message: '网站集合不能为空' })
+		}
+
+		const newWebsites = []
+
+		for (let i = 0; i < websites.length; i += 1) {
+			const website = websites[0]
+
+			if (website.role_name !== null || website.role_name !== undefined) {
+				// eslint-disable-next-line no-await-in-loop
+				const websiteRole = await knex
+					.select()
+					.column({
+						website_id: 'website.id',
+						website_role_id: 'website_role.id',
+					})
+					.from('website')
+					.leftJoin('website_role', 'website.id', 'website_role.website_id')
+					.where({
+						'website.name': website.name,
+						'website_role.name': website.role_name,
+					})
+					.first()
+				if (!websiteRole) {
+					throw new ServiceError({ message: '网站名或网站内的角色名不存在', value: website })
+				}
+				newWebsites.push(websiteRole)
+			} else {
+				// eslint-disable-next-line no-await-in-loop
+				const websiteRole = await knex
+					.select()
+					.column({
+						website_id: 'id',
+					})
+					.from('website')
+					.where({
+						name: website.name,
+					})
+					.first()
+				if (!websiteRole) {
+					throw new ServiceError({ message: '网站名不存在', value: website })
+				}
+				newWebsites.push({
+					...websiteRole,
+					website_role_id: null,
+				})
+			}
+		}
+
+		await knex.transaction(async (trx) => {
+			await knex('user_has_website').where({
+				user_id: user.id,
+			}).del()
+			await trx('user_has_website').insert(newWebsites.map(({ website_id, website_role_id }) => ({
+				user_id: user.id,
+				website_id,
+				website_role_id,
+			})))
+		})
 	}
 }

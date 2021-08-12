@@ -1,1 +1,9 @@
-node_modules/
+.github
+doc
+node_modules
+run
+typings
+.eslintrc
+.gitignore
+jsconfig.json
+README.md

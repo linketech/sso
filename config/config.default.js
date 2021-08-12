@@ -1,5 +1,3 @@
-/* eslint valid-jsdoc: "off" */
-
 /**
  * @param {Egg.EggAppInfo} appInfo app info
  * https://github.com/eggjs/egg/blob/master/config/config.default.js

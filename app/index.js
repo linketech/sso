@@ -1,3 +1,11 @@
+function isNil(value) {
+	return value === undefined || value === null
+}
+
+function ifNilThenNull(value) {
+	return isNil(value) ? null : value
+}
+
 /**
  * @param {Egg.Application} app - egg application
  */
@@ -59,21 +67,29 @@ class AppBootHook {
 
 		const addList = []
 		const subList = []
+		const updateList = []
 		Object.keys(chain).forEach((key) => {
 			const [inCode, inDb] = chain[key]
 			if (inCode && !inDb) {
 				addList.push(inCode)
 			} else if (!inCode && inDb) {
 				subList.push(inDb)
-			} else if (!inCode && !inDb) {
-				throw new Error('inCode和inDb不可能同时为空')
+			} else if (inCode && inDb) {
+				if (ifNilThenNull(inCode.group_name) !== ifNilThenNull(inDb.group_name) || ifNilThenNull(inCode.description) !== ifNilThenNull(inDb.description)) {
+					updateList.push({
+						id: inDb.id,
+						group_name: ifNilThenNull(inCode.group_name),
+						description: ifNilThenNull(inCode.description),
+					})
+				}
 			}
 		})
 
-		if (addList.length > 0 || subList.length > 0) {
-			await ctx.service.permission.refresh(addList, subList)
-			logger.info(`增加${addList.length}条权限`)
-			logger.info(`删除${subList.length}条权限`)
+		if (addList.length + subList.length + updateList.length > 0) {
+			await ctx.service.permission.refresh(addList, subList, updateList)
+			logger.info(`增加了${addList.length}条权限`)
+			logger.info(`删除了${subList.length}条权限`)
+			logger.info(`更新了${updateList.length}条权限`)
 		}
 	}
 

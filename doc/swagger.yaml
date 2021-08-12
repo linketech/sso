@@ -68,12 +68,12 @@ paths:
         "200":
           description: >
             Successfully authenticated.
-            The session ID is returned in a cookie named `EGG_SESS`. You need to include this cookie in subsequent requests.
+            The session ID is returned in a cookie named `SSO_SESSION`. You need to include this cookie in subsequent requests.
           headers:
             Set-Cookie:
               schema:
                 type: string
-                example: EGG_SESS=abcde12345; Path=/; HttpOnly
+                example: SSO_SESSION=abcde12345; Path=/; HttpOnly
       security: []
     delete:
       tags:
@@ -96,13 +96,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  user:
-                    type: object
-                    description: 用户信息
-                    properties:
-                      name:
-                        type: string
-                        description: 用户名
+                  name:
+                    type: string
+                    description: 用户名
                   role:
                     type: object
                     description: 角色信息
@@ -110,39 +106,33 @@ paths:
                       name:
                         type: string
                         description: 用户名
-                  permission:
-                    type: array
-                    items:
-                      type: object
-                      description: 权限
-                      properties:
-                        id:
-                          type: string
-                        path:
-                          type: string
-                        method:
-                          type: string
-                        description:
-                          type: string
-                        group_name:
-                          type: string
+                      permissions:
+                        type: array
+                        items:
+                          type: object
+                          description: 权限
+                          properties:
+                            id:
+                              type: string
+                            path:
+                              type: string
+                            method:
+                              type: string
+                            description:
+                              type: string
+                            group_name:
+                              type: string
                   website:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:
-                          type: string
-                          description: 网站ID
                         name:
                           type: string
                           description: 网站名
-                        url:
+                        role_name:
                           type: string
-                          description: 网站地址
-                        group_name:
-                          type: string
-                          description: 分组名
+                          description: 给用户分配的网站角色
       security:
         - cookieAuth: []
   /session/user:
@@ -341,6 +331,49 @@ paths:
           description: 请求成功
       security:
         - cookieAuth: []
+  /user/{user_name}:
+    get:
+      tags:
+        - 用户
+      summary: 获取用户详细信息
+      description: 获取用户详细信息
+      parameters:
+        - name: user_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: 用户名
+                  disabled:
+                    type: string
+                    description: 是否被停用
+                  role_name:
+                    type: string
+                    description: 权限组名
+                  websites:
+                    type: array
+                    description: 分配的网站信息
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: 网站名
+                        role_name:
+                          type: string
+                          description: 网站角色名
+      security:
+        - cookieAuth: []
   /user/password/reset:
     put:
       tags:
@@ -356,6 +389,38 @@ paths:
                   type: string
                   description: 用户ID
                   pattern: "^[0-9a-fA-F]{32}$"
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /user/{user_name}/match/website:
+    put:
+      tags:
+        - 用户
+        - 网站
+      summary: 分配网站角色
+      description: 未修改的网站也需要上传配对关系
+      parameters:
+        - name: user_name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: 网站名
+                  role_name:
+                    type: string
+                    description: 网站角色名
       responses:
         "200":
           description: 请求成功
@@ -483,6 +548,8 @@ paths:
       responses:
         "200":
           description: 请求成功
+      security:
+        - cookieAuth: []
   /role/permission:
     get:
       tags:
@@ -564,7 +631,7 @@ paths:
     post:
       tags:
         - 网站
-      summary: 创建权限组
+      summary: 创建网站
       requestBody:
         content:
           application/json:
@@ -590,16 +657,20 @@ paths:
       responses:
         "200":
           description: 请求成功
+      security:
+        - cookieAuth: []
+  /website/{website_name}:
     put:
       tags:
         - 网站
       summary: 修改网站
       parameters:
-        - name: id
-          in: query
+        - name: website_name
+          description: 网站名
+          in: path
+          required: true
           schema:
             type: string
-            description: 网站ID
       requestBody:
         content:
           application/json:
@@ -622,24 +693,36 @@ paths:
       responses:
         "200":
           description: 请求成功
+      security:
+        - cookieAuth: []
     delete:
       tags:
         - 网站
       summary: 删除网站
       parameters:
-        - name: id
-          in: query
+        - name: website_name
+          description: 网站名
+          in: path
+          required: true
           schema:
             type: string
-            description: 网站ID
       responses:
         "200":
           description: 请求成功
-  /role/website:
+      security:
+        - cookieAuth: []
+  /website/{website_name}/key:
     get:
       tags:
-        - 权限组与网站的关系
-      summary: 查看权限组与网站的关系
+        - 网站
+      summary: 查看指定网站的所有公钥
+      parameters:
+        - name: website_name
+          description: 网站名
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: 请求成功
@@ -650,45 +733,515 @@ paths:
                 items:
                   type: object
                   properties:
-                    role_id:
+                    id:
                       type: string
-                      description: 权限组ID
-                    role_name:
+                      description: 网站密钥或公钥ID
+                    algorithm_name:
+                      $ref: "#/components/schemas/algorithm_name"
+                    key:
                       type: string
-                      description: 权限组名
-                    website_id:
-                      type: string
-                      description: 网站ID
-                    website_name:
-                      type: string
-                      description: 网站名
+                      description: 网站密钥或公钥
+                      maxLength: 65535
+                    create_time:
+                      type: integer
+                      description: 网站密钥或公钥创建时间
       security:
         - cookieAuth: []
-    put:
+    post:
       tags:
-        - 权限组与网站的关系
-      summary: 更新权限组与网站
-      description: 清除之前的关系，以上传的为最终结果
+        - 网站
+      summary: 创建指定网站的公钥
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                role_id:
+                algorithm_name:
+                  $ref: "#/components/schemas/algorithm_name"
+                key:
                   type: string
-                  description: 权限组ID
-                website_id_list:
-                  type: string
-                  description: 网站ID集合
+                  description: 网站密钥或公钥
+                  maxLength: 65535
+              required:
+                - algorithm_name
+                - key
+      responses:
+        "200":
+          description: 请求成功
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站密钥或公钥ID
+      security:
+        - cookieAuth: []
+  /website/{website_name}/key/{algorithm_name}:
+    delete:
+      tags:
+        - 网站
+      summary: 删除指定网站的公钥
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: algorithm_name
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: 请求成功
       security:
         - cookieAuth: []
+  /website/{website_name}/role:
+    get:
+      tags:
+        - 网站
+      summary: 查看指定网站的所有角色
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 网站名
+      responses:
+        "200":
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站角色ID
+                    name:
+                      type: string
+                      description: 网站角色名
+                    create_time:
+                      type: integer
+                      description: 网站角色创建时间
+      security:
+        - cookieAuth: []
+    post:
+      tags:
+        - 网站
+      summary: 创建指定网站的角色
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 网站名
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 网站角色名
+              required:
+                - name
+      responses:
+        "200":
+          description: 请求成功
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站角色ID
+      security:
+        - cookieAuth: []
+  /website/{website_name}/role/{role_name}:
+    delete:
+      tags:
+        - 网站
+      summary: 删除指定网站的角色
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: role_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 网站
+      summary: 修改指定网站的角色
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: role_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 修改后的网站角色名
+              required:
+                - name
+      responses:
+        "200":
+          description: 请求成功
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站角色ID
+      security:
+        - cookieAuth: []
+  /website/{website_name}/permission:
+    get:
+      tags:
+        - 网站
+      summary: 查看指定网站的所有权限
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 网站名
+      responses:
+        "200":
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站权限ID
+                    pattern:
+                      type: string
+                      description: 网站权限匹配符
+                    create_time:
+                      type: integer
+                      description: 网站权限创建时间
+                    group_name:
+                      type: string
+                      description: 网站权限分组名
+                    description:
+                      type: string
+                      description: 网站权限描述
+      security:
+        - cookieAuth: []
+    post:
+      tags:
+        - 网站
+      summary: 创建指定网站的权限
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 网站名
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pattern:
+                  type: string
+                  description: 网站权限名
+                group_name:
+                  type: string
+                  description: 网站权限分组名
+                description:
+                  type: string
+                  description: 网站权限描述
+              required:
+                - pattern
+      responses:
+        "200":
+          description: 请求成功
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站权限ID
+      security:
+        - cookieAuth: []
+  /website/{website_name}/permission/{permission_id}:
+    delete:
+      tags:
+        - 网站
+      summary: 删除指定网站的权限
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: permission_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 网站
+      summary: 修改指定网站的权限
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: permission_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pattern:
+                  type: string
+                  description: 网站权限名
+                group_name:
+                  type: string
+                  description: 网站权限分组名
+                description:
+                  type: string
+                  description: 网站权限描述
+              required:
+                - pattern
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /website/{website_name}/role/{role_name}/permission:
+    get:
+      tags:
+        - 网站
+      summary: 获取网站角色下的网站权限
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: role_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: 网站权限ID
+                    pattern:
+                      type: string
+                      description: 网站权限匹配符
+                    create_time:
+                      type: integer
+                      description: 网站权限创建时间
+                    group_name:
+                      type: string
+                      description: 网站权限分组名
+                    description:
+                      type: string
+                      description: 网站权限描述
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 网站
+      summary: 更新网站角色下的网站权限
+      description: 清除之前的关系，以上传的为最终结果
+      parameters:
+        - name: website_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: role_name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 权限id
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /website_api/init/role/permission:
+    put:
+      tags:
+        - 网站
+        - 网站API
+      summary: 网站更新自己的权限和权限组
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  pattern:
+                    type: string
+                    description: 权限Pattern
+                  group_name:
+                    type: string
+                    description: 权限分组名
+                  description:
+                    type: string
+                    description: 权限描述
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - websiteAuth: []
+  /website_api/user/{user_name}/permission:
+    get:
+      tags:
+        - 网站
+        - 网站API
+      summary: 网站获取指定用户的权限组
+      description: 清除之前的关系，以上传的为最终结果
+      parameters:
+        - name: user_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pattern:
+                      type: string
+                      description: 权限Pattern
+      security:
+        - websiteAuth: []
+  /website_api/role/{role_name}/permission:
+    get:
+      tags:
+        - 网站
+        - 网站API
+      summary: 网站获取指定用户的权限组
+      description: 清除之前的关系，以上传的为最终结果
+      parameters:
+        - name: role_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pattern:
+                      type: string
+                      description: 权限Pattern
+      security:
+        - websiteAuth: []
 components:
+  schemas:
+    algorithm_name:
+      type: string
+      enum: [HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512, PS256, PS384]
   securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie
-      name: EGG_SESS
+      name: SSO_SESSION
+    websiteAuth:
+      type: apiKey
+      in: query
+      name: token
