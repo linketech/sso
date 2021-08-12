@@ -399,8 +399,69 @@ paths:
       tags:
         - 用户
         - 网站
+        - 弃用
       summary: 分配网站角色
       description: 未修改的网站也需要上传配对关系
+      parameters:
+        - name: user_name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: 网站名
+                  role_name:
+                    type: string
+                    description: 网站角色名
+      responses:
+        "200":
+          description: 请求成功
+      security:
+        - cookieAuth: []
+  /user/{user_name}/website:
+    get:
+      tags:
+        - 用户
+        - 网站
+      summary: 查询指定用户被分配的网站
+      parameters:
+        - name: user_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 请求成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: 网站名
+                    role_name:
+                      type: string
+                      description: 网站角色名
+      security:
+        - cookieAuth: []
+    put:
+      tags:
+        - 用户
+        - 网站
+      summary: 对指定用户进行网站分配
       parameters:
         - name: user_name
           in: path
@@ -905,7 +966,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: role_id
+        - name: role_name
           in: path
           required: true
           schema:

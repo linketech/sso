@@ -389,17 +389,33 @@ module.exports = class UserService extends Service {
 		}
 	}
 
+	async listWebSite(name) {
+		const { knex } = this.app
+
+		const user = await this.getByName(name)
+
+		const websites = await knex
+			.select()
+			.column({
+				name: 'w.name',
+				role_name: 'wr.name',
+			})
+			.from('user_has_website as uhw')
+			.leftJoin('website as w', 'uhw.website_id', 'w.id')
+			.leftJoin('website_role as wr', 'uhw.website_role_id', 'wr.id')
+			.where({
+				'uhw.user_id': user.id,
+			})
+
+		return websites
+	}
+
 	async updateWebSite(name, websites) {
 		const { knex } = this.app
 
 		const user = await this.getByName(name)
 
-		if (!(websites && websites.length > 0)) {
-			throw new ServiceError({ message: '网站集合不能为空' })
-		}
-
 		const newWebsites = []
-
 		for (let i = 0; i < websites.length; i += 1) {
 			const website = websites[0]
 
@@ -448,11 +464,13 @@ module.exports = class UserService extends Service {
 			await knex('user_has_website').where({
 				user_id: user.id,
 			}).del()
-			await trx('user_has_website').insert(newWebsites.map(({ website_id, website_role_id }) => ({
-				user_id: user.id,
-				website_id,
-				website_role_id,
-			})))
+			if (newWebsites && newWebsites.length > 0) {
+				await trx('user_has_website').insert(newWebsites.map(({ website_id, website_role_id }) => ({
+					user_id: user.id,
+					website_id,
+					website_role_id,
+				})))
+			}
 		})
 	}
 }
