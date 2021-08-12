@@ -26,8 +26,11 @@ module.exports = ({ router, controller }) => {
 	subRouter.get('/user/:user_name', loginFilter, permissionFilter('查看详情', '用户'), controller.user.getDetail)
 	subRouter.put('/user', loginFilter, permissionFilter('修改', '用户'), controller.user.update)
 	subRouter.put('/user/password/reset', loginFilter, permissionFilter('重置密码', '用户'), controller.user.resetPassword)
-	subRouter.put('/user/:user_name/match/website', loginFilter, permissionFilter('分配网站', '用户'), controller.user.updateWebSite)
+	subRouter.put('/user/:user_name/match/website', loginFilter, permissionFilter('分配网站(弃用)', '用户'), controller.user.updateWebSite) // Deprecated
 	subRouter.delete('/user', loginFilter, permissionFilter('删除', '用户'), controller.user.destroy)
+
+	subRouter.get('/user/:user_name/website', loginFilter, permissionFilter('查看分配的网站', '用户'), controller.user.listWebsite)
+	subRouter.put('/user/:user_name/website', loginFilter, permissionFilter('分配网站', '用户'), controller.user.updateWebSite)
 
 	subRouter.get('/role', loginFilter, permissionFilter('查看所有', '权限组'), controller.role.index)
 	subRouter.post('/role', loginFilter, permissionFilter('创建', '权限组'), controller.role.create)

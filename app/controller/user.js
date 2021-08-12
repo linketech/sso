@@ -106,6 +106,30 @@ module.exports = class UserController extends Controller {
 		response.status = 200
 	}
 
+	async listWebsite() {
+		const { ctx } = this
+		const { response } = ctx
+
+		ctx.validate({
+			params: {
+				type: 'object',
+				properties: {
+					user_name: {
+						type: 'string',
+						maxLength: 45,
+					},
+				},
+				required: ['user_name'],
+			},
+		})
+
+		const { user_name } = ctx.params
+
+		const websites = await ctx.service.user.listWebSite(user_name)
+
+		response.body = websites
+	}
+
 	async updateWebSite() {
 		const { ctx } = this
 		const { request, response } = ctx
@@ -135,7 +159,6 @@ module.exports = class UserController extends Controller {
 					},
 					required: ['name'],
 				},
-				minItems: 1,
 			},
 		})
 
