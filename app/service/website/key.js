@@ -142,14 +142,9 @@ module.exports = class RoleService extends WebstieBaseService {
 			throw new ServiceError({ message: '指定网站不存在指定算法的密钥或公钥' })
 		}
 
-		let decoded
 		try {
-			decoded = jwt.verify(token, publicKey.key, { algorithm: alg })
+			jwt.verify(token, publicKey.key, { algorithm: alg })
 		} catch (err) {
-			// DO NOTHING
-		}
-
-		if (!decoded) {
 			throw new ServiceError({ message: 'JWT验证失败' })
 		}
 
