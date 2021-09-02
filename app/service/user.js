@@ -461,7 +461,7 @@ module.exports = class UserService extends Service {
 		}
 
 		await knex.transaction(async (trx) => {
-			await knex('user_has_website').where({
+			await trx('user_has_website').where({
 				user_id: user.id,
 			}).del()
 			if (newWebsites && newWebsites.length > 0) {
